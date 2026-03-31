@@ -1,0 +1,96 @@
+
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, 'Vui lòng nhập tên'],
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: [true, 'Vui lòng nhập email'],
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    passwordHash: {
+      type: String,
+      required: true,
+    },
+    role: {
+      type: String,
+      enum: ['member', 'ngo', 'individual', 'admin'],
+      default: 'member',
+    },
+
+    // Account lifecycle
+    accountStatus: {
+      type: String,
+      enum: ['active', 'suspended', 'banned'],
+      default: 'active',
+    },
+    verificationStatus: {
+      type: String,
+      enum: ['unverified', 'pending', 'verified', 'rejected'],
+      default: 'unverified',
+    },
+    lastLoginAt: {
+      type: Date,
+      default: null,
+    },
+
+    // Profile
+    avatar: {
+      type: String,
+      default: null,
+    },
+    contact: {
+      phone: { type: String, default: null },
+    },
+    location: {
+      city: { type: String, default: null },
+      district: { type: String, default: null },
+    },
+
+    // NGO-specific profile
+    ngoProfile: {
+      organizationName: { type: String, default: null },
+      website: { type: String, default: null },
+      description: { type: String, default: null },
+    },
+
+    // Gamification
+    badge: {
+      type: String,
+      enum: ['none', 'bronze', 'silver', 'gold'],
+      default: 'none',
+    },
+
+    // Counters
+    completedDonations: {
+      type: Number,
+      default: 0,
+    },
+    receivedItemsThisMonth: {
+      type: Number,
+      default: 0,
+    },
+    receivedItemsResetAt: {
+      type: Date,
+      default: null,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ role: 1, accountStatus: 1 });
+userSchema.index({ verificationStatus: 1, role: 1 });
+
+const User = mongoose.model('User', userSchema);
+
+module.exports = User;

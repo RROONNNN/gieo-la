@@ -1,0 +1,13 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "Frontend package",
+  "private": true,
+  "scripts": {
+    "dev": "echo \"Frontend dev server not configured yet\"",
+    "build": "echo \"Frontend build not configured yet\"",
+    "start": "echo \"Frontend start not configured yet\""
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

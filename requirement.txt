@@ -1,0 +1,245 @@
+REQUIREMENTS DOCUMENT — NỀN TẢNG "Lá Lành"
+Nền tảng chia sẻ đồ dùng cũ cộng đồng | Tech Stack: Next.js + Node.js + MongoDB
+================================================================================
+
+
+I. TỔNG QUAN HỆ THỐNG
+----------------------
+"Lá Lành" là nền tảng web kết nối người có đồ dùng cũ muốn tặng với người cần nhận, ưu tiên cá nhân khó khăn và tổ chức thiện nguyện. Hệ thống hoạt động theo mô hình diễn đàn cộng đồng, có gamification để khuyến khích người dùng tích cực tặng đồ.
+
+
+II. PHÂN QUYỀN NGƯỜI DÙNG (User Roles & Permissions)
+------------------------------------------------------
+Hệ thống có 5 loại tài khoản với quyền hạn khác nhau:
+
+1. Khách (Guest)
+- Không cần đăng nhập
+- Chỉ xem bài đăng và tìm kiếm theo danh mục (Read-only)
+- Không thể đăng ký nhận đồ, không thể chat
+
+2. Thành viên (Member)
+- Đăng ký tài khoản thông thường
+- CRUD bài đăng cá nhân (tạo, xem, sửa, xóa bài của mình)
+- Không thể đăng ký nhận đồ
+
+3. Tổ chức Thiện nguyện Xác thực (Verified NGO)
+- Được Admin cấp tích xanh sau khi kiểm tra uy tín
+- Có tất cả quyền của Member
+- Được đăng Wishlist (yêu cầu đồ cần nhận) trên trang Wishlist riêng
+- Khi đăng ký nhận đồ, tên NGO nổi lên đầu danh sách trong panel của người đăng bài (nhưng người đăng vẫn tự quyết định chọn ai)
+- Giới hạn nhận: tối đa 10 bài đăng/tháng
+
+4. Cá nhân Khó khăn (Verified Individual)
+- Đăng ký loại tài khoản này và chờ Admin phê duyệt
+- Khi đăng ký, phải đính kèm ảnh giấy tờ xác nhận (hộ nghèo, cận nghèo, hoặc xác nhận địa phương)
+- Sau khi được duyệt, hiển thị huy hiệu "Hoàn cảnh khó khăn — Đã xác thực" cạnh tên
+- Có quyền nhấn "Đăng ký nhận đồ" và điền mô tả hoàn cảnh
+- Giới hạn nhận: tối đa 3 bài đăng/tháng. Khi đạt giới hạn, nút "Đăng ký nhận đồ" tự động ẩn đến tháng sau
+- Thay vì leaderboard "Top cho đi", profile hiển thị lịch sử đồ đã nhận và phần đăng Ảnh cảm ơn (Feedback)
+
+5. Quản trị viên (Admin)
+- Toàn quyền điều phối qua Dashboard
+- Phê duyệt / từ chối tài khoản "Cá nhân khó khăn"
+- Cấp / thu hồi tích xanh NGO
+- Xóa bài đăng vi phạm (tình trạng đồ quá kém, sai danh mục)
+- Khóa tài khoản vi phạm
+- Ghim bài đăng khẩn cấp của NGO lên đầu diễn đàn
+- Set status "Hoàn thành" cho bài đăng (xem mục IV)
+- Chốt danh sách Leaderboard Top mỗi tháng
+- [MỚI] Soạn thảo và đăng Bản tin (Blog Post) lên trang Bản tin cộng đồng (xem mục XIII)
+
+
+III. CẤU TRÚC DỮ LIỆU BÀI ĐĂNG (Post Data Structure)
+------------------------------------------------------
+Các trường bắt buộc khi tạo bài đăng "Lá Lành":
+
+- category   : Enum — 1 trong 4 danh mục: Đồ Nam / Đồ Nữ / Đồ Trẻ em / Phụ kiện
+- quantity   : Integer — Số lượng cụ thể (VD: 5, 1, 2...)
+- condition  : String / Dropdown — Tình trạng: Mới 100% / Mới 90% / Mới 80% hoặc mô tả tự do
+- images     : Array<File> — Tối đa 5 ảnh thực tế, tối ưu dung lượng khi upload
+- description: String — (Không bắt buộc) Câu chuyện về món đồ, lưu ý riêng
+
+Vòng đời trạng thái bài đăng (Status Flow):
+
+  Sẵn sàng  →  Đang giao dịch  →  Đã giao dịch  →  Hoàn thành
+ (người đăng set)               (người đăng set)    (Admin set)
+
+Quy tắc chuyển trạng thái:
+- "Sẵn sàng" → "Đang giao dịch": Người đăng bài tự set khi đã chọn được người nhận
+- "Đang giao dịch" → "Đã giao dịch": Người đăng bài tự set khi đã giao đồ xong
+- "Đã giao dịch" → "Hoàn thành": Chỉ Admin set, sau khi kiểm tra có ảnh xác nhận từ người nhận
+
+
+IV. LUỒNG "ĐĂNG KÝ NHẬN ĐỒ" (Chi tiết)
+-----------------------------------------
+
+Bước 1 — Người dùng đăng ký nhận
+- NGO / Cá nhân khó khăn nhấn nút "Đăng ký nhận đồ" trên bài đăng có status "Sẵn sàng"
+- Điền một đoạn văn mô tả hoàn cảnh / lý do muốn nhận để thuyết phục người tặng
+
+Bước 2 — Người đăng bài xem xét
+- Người đăng bài vào panel riêng để xem danh sách người đăng ký (public, mọi người đều có thể xem)
+- Danh sách hiển thị theo thứ tự ưu tiên: NGO (tích xanh) nổi lên đầu, sau đó Cá nhân khó khăn, cuối cùng Member thường
+- Người đăng bài đọc mô tả hoàn cảnh và tự quyết định chọn 1 người nhận
+
+Bước 3 — Thông báo kết quả
+- Người được chọn: nhận notification "Chúc mừng! Bạn đã được chọn nhận đồ"
+- Người không được chọn: nhận notification "Rất tiếc, món đồ này đã được trao cho người khác"
+- Bài đăng tự động chuyển status → "Đang giao dịch"
+
+Bước 4 — Liên lạc & Giao đồ
+- Người tặng và người nhận liên lạc qua chat 1-1 trong app hoặc tự trao đổi số điện thoại trong chat, tùy người dùng
+
+Bước 5 — Xác nhận hoàn thành
+- Sau khi nhận đồ, người nhận đăng ảnh xác nhận vào comment/thread của bài đăng
+- Người tặng set status → "Đã giao dịch"
+- Admin lọc các bài "Đã giao dịch", kiểm tra có ảnh xác nhận → set → "Hoàn thành"
+- Bài đăng "Hoàn thành" được tính vào điểm leaderboard tháng của người tặng
+
+
+V. HỆ THỐNG CHAT REAL-TIME
+----------------------------
+- Mô hình: Chat 1-1 riêng tư giữa hai account với nhau (như inbox Messenger). Cuộc hội thoại (Conversation) chỉ gắn với cặp người dùng, không gắn với bài đăng hay đơn đăng ký cụ thể nào.
+- Chỉ mở chat sau khi người tặng đã chọn người nhận (tránh spam). Hệ thống tự động khởi tạo cuộc hội thoại giữa người tặng và người được chọn nếu chưa tồn tại.
+- Sau khi cuộc hội thoại được tạo, hai bên có thể tiếp tục nhắn tin với nhau trong mọi bối cảnh (không chỉ riêng giao dịch đó).
+- Người dùng có thể xem profile và lịch sử bài đăng của nhau từ trong cửa sổ chat
+
+
+VI. HỆ THỐNG XẾP HẠNG & GAMIFICATION
+---------------------------------------
+
+Leaderboard tháng:
+- Reset mỗi tháng, xếp hạng dựa trên số bài đăng đạt status "Hoàn thành" trong tháng đó
+- Hiển thị Top 10 người dùng tích cực nhất, cập nhật real-time
+- Có trang Leaderboard riêng, vinh danh theo tháng / quý
+
+Phân bậc huy hiệu (áp dụng theo thứ hạng tháng, reset mỗi tháng):
+
+  Top 1       → Đại sứ Lá Lành     : Vương miện / biểu tượng đặc biệt trên Avatar
+  Top 2 – 5   → Lá Lành Tích Cực   : Huy hiệu Bạc
+  Top 6 – 10  → Mầm Lành Năng Nổ   : Huy hiệu Đồng
+
+LƯU Ý: Huy hiệu thay đổi mỗi tháng theo kết quả leaderboard. Không tích lũy vĩnh viễn.
+
+Điều kiện tính điểm:
+- Chỉ bài đăng có status "Hoàn thành" (do Admin set) mới được tính
+- Hệ thống tự động tính, không can thiệp thủ công
+
+
+VII. TRANG WISHLIST (Dành cho NGO)
+------------------------------------
+- Trang riêng biệt /wishlist, chỉ NGO xác thực được đăng
+- Mỗi Wishlist post là một yêu cầu đồ cần nhận (ghi rõ loại đồ, số lượng, mục đích sử dụng)
+- Member thường có thể vào trang này để xem và liên hệ tặng đồ cho NGO
+- Admin có thể ghim Wishlist khẩn cấp
+
+
+VIII. BỘ LỌC & TÌM KIẾM
+--------------------------
+- Full-text Search  : Tìm kiếm theo từ khóa trong tên và mô tả bài đăng
+- Category Filter   : Lọc nhanh theo 4 danh mục: Đồ Nam / Nữ / Trẻ em / Phụ kiện
+- Location-based    : Mặc định khu vực Hà Nội, có thể mở rộng sau
+- Status Filter     : Lọc theo trạng thái bài đăng (Admin)
+
+
+IX. TRANG CÁ NHÂN (Profile)
+-----------------------------
+
+Profile người tặng (Member thường / NGO):
+- Số lượng "Lá đã gieo" (tổng bài đăng)
+- Danh hiệu / huy hiệu hiện tại
+- Lịch sử các món đồ đã trao thành công
+
+Profile Cá nhân khó khăn:
+- Huy hiệu "Hoàn cảnh khó khăn — Đã xác thực"
+- Lịch sử đồ đã nhận
+- Phần đăng Ảnh cảm ơn (Feedback) sau khi nhận đồ
+
+Profile NGO:
+- Tích xanh xác thực
+- Danh sách Wishlist đã đăng
+- Logo hiển thị trong slide ở Footer trang chủ
+
+
+X. CHỨC NĂNG ADMIN DASHBOARD
+------------------------------
+- Duyệt tài khoản  : Phê duyệt / từ chối Cá nhân khó khăn, kiểm tra giấy tờ đính kèm
+- Cấp tích xanh    : Cấp / thu hồi Verified NGO
+- Kiểm soát nội dung: Xóa bài vi phạm, khóa tài khoản
+- Quản lý status   : Set "Hoàn thành" cho bài đã có ảnh xác nhận
+- Ghim bài         : Ghim bài đăng / Wishlist khẩn cấp lên đầu
+- Leaderboard      : Chốt danh sách Top tháng, trao thưởng (nếu có)
+- History Logs     : Xem toàn bộ lịch sử giao dịch khi có khiếu nại
+- [MỚI] Quản lý Bản tin : Tạo / sửa / xóa / ẩn Blog Post trên trang Bản tin cộng đồng
+
+
+XI. CƠ CHẾ MINH BẠCH
+----------------------
+- Feedback Loop: Người nhận đăng ảnh xác nhận trực tiếp vào thread bài đăng sau khi nhận đồ
+- History Logs : Lưu toàn bộ lịch sử giao dịch, Admin truy xuất khi có khiếu nại trục lợi
+- Giới hạn nhận: Cá nhân khó khăn 3 bài/tháng, NGO 10 bài/tháng — hệ thống tự động kiểm soát
+
+
+XII. GIAO DIỆN CHÍNH (UI/UX Outline)
+--------------------------------------
+- /                 : Trang chủ — Hero section, thanh Search, 4 tab danh mục, feed bài đăng mới nhất, Footer logo NGO
+- /posts            : Diễn đàn — Danh sách bài đăng, filter danh mục + status, search
+- /posts/[id]       : Chi tiết bài — Ảnh, thông tin đồ, nút "Đăng ký nhận", danh sách đăng ký (private), thread comment/feedback
+- /wishlist         : Wishlist NGO — Danh sách yêu cầu đồ từ các NGO xác thực
+- /leaderboard      : Bảng xếp hạng — Top 10 tháng, lịch sử tháng trước
+- /profile/[id]     : Trang cá nhân — Thông tin user, lịch sử bài đăng, huy hiệu
+- /chat             : Hộp thư — Danh sách cuộc hội thoại 1-1
+- /admin            : Dashboard — Toàn bộ chức năng quản trị
+- [MỚI] /news       : Bản tin cộng đồng — Danh sách Blog Post do Admin đăng
+- [MỚI] /news/[id]  : Chi tiết bài bản tin — Nội dung đầy đủ, ảnh bìa, ngày đăng
+
+
+================================================================================
+[MỚI] XIII. CHỨC NĂNG BẢN TIN CỘNG ĐỒNG (Admin Blog)
+======================================================
+
+Mục tiêu:
+Admin có thể đăng các bài viết thông tin, cập nhật hoạt động, câu chuyện cảm hứng
+lên một trang Bản tin riêng biệt. Đây là kênh truyền thông một chiều từ Ban quản trị
+đến cộng đồng, không phải diễn đàn trao đổi.
+
+Quyền truy cập:
+- Chỉ Admin được tạo / sửa / xóa / ẩn bài bản tin
+- Tất cả người dùng (kể cả Khách chưa đăng nhập) đều được đọc bài bản tin (Read-only)
+- Người dùng KHÔNG được comment trên bài bản tin (tránh loạn thread)
+
+Cấu trúc dữ liệu Blog Post:
+- title       : String (bắt buộc) — Tiêu đề bài viết
+- thumbnail   : File/Image (bắt buộc) — Ảnh bìa đại diện
+- content     : Rich Text / Markdown (bắt buộc) — Nội dung bài viết đầy đủ
+- category    : Enum (bắt buộc) — Phân loại bài viết:
+                  + Thông báo (Announcement)
+                  + Câu chuyện cảm hứng (Story)
+                  + Hướng dẫn sử dụng (Guide)
+                  + Hoạt động cộng đồng (Event)
+- status      : Enum — Draft (Nháp) / Published (Đã đăng) / Hidden (Ẩn)
+- publishedAt : DateTime — Ngày giờ đăng bài (tự động khi Admin nhấn "Đăng")
+- author      : Ref → Admin account (hiển thị "Ban quản trị Lá Lành")
+- isPinned    : Boolean — Admin có thể ghim bài bản tin nổi bật lên đầu trang /news
+
+Luồng tạo bài bản tin (Admin):
+1. Admin vào /admin → tab "Quản lý Bản tin"
+2. Nhấn "Tạo bài mới" → điền đầy đủ các trường trên
+3. Có thể "Lưu nháp" (status = Draft) hoặc "Đăng ngay" (status = Published)
+4. Bài đã đăng xuất hiện ngay trên trang /news theo thứ tự mới nhất lên đầu
+5. Admin có thể sửa / ẩn / xóa bài bất kỳ lúc nào
+
+Trang /news (Giao diện người dùng):
+- Hiển thị danh sách các bài bản tin đã Published, mới nhất lên đầu
+- Bài được ghim (isPinned = true) luôn hiển thị đầu tiên, có badge "Ghim"
+- Mỗi card bài viết hiển thị: ảnh bìa, tiêu đề, category badge, ngày đăng, tóm tắt nội dung
+- Có thể lọc theo category (Thông báo / Câu chuyện / Hướng dẫn / Hoạt động)
+- Nhấn vào card → vào trang /news/[id] đọc bài đầy đủ
+
+Tích hợp Trang chủ:
+- Section "Bản tin mới nhất" trên trang chủ (/) hiển thị 3 bài bản tin mới nhất
+- Có nút "Xem tất cả" dẫn sang /news
+================================================================================
+
+================================================================================
+END OF DOCUMENT
