@@ -1,7 +1,9 @@
 'use strict';
 
-const { Router }   = require('express');
-const authRouter   = require('./authRoutes');
+const { Router }            = require('express');
+const authRouter            = require('./authRoutes');
+const verificationRouter    = require('./verificationRoutes');
+const adminUserRouter       = require('./adminUserRoutes');
 
 const router = Router();
 
@@ -12,5 +14,7 @@ router.get('/', (req, res) => {
 
 // Domain routers
 router.use('/auth', authRouter);
+router.use('/verification-requests', verificationRouter);
+router.use('/admin/users', adminUserRouter);
 
 module.exports = router;

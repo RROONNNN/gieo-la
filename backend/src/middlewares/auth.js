@@ -2,6 +2,7 @@
 
 const jwt  = require('jsonwebtoken');
 const User = require('../models/User');
+const { ACCOUNT_STATUSES } = require('../constants/userEnums');
 
 /**
  * protect — parse Bearer token, verify JWT, load user, block locked accounts.
@@ -29,7 +30,10 @@ const protect = async (req, res, next) => {
     return res.status(401).json({ success: false, message: 'Tài khoản không tồn tại' });
   }
 
-  if (user.accountStatus === 'suspended' || user.accountStatus === 'banned') {
+  if (
+    user.accountStatus === ACCOUNT_STATUSES.SUSPENDED ||
+    user.accountStatus === ACCOUNT_STATUSES.BANNED
+  ) {
     return res.status(403).json({ success: false, message: 'Tài khoản đã bị khóa' });
   }
 

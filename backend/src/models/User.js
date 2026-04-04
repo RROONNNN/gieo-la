@@ -1,5 +1,13 @@
 
 const mongoose = require('mongoose');
+const {
+  USER_ROLES,
+  ACCOUNT_STATUSES,
+  VERIFICATION_STATUSES,
+  USER_ROLE_VALUES,
+  ACCOUNT_STATUS_VALUES,
+  VERIFICATION_STATUS_VALUES,
+} = require('../constants/userEnums');
 
 const userSchema = new mongoose.Schema(
   {
@@ -21,20 +29,20 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['member', 'ngo', 'individual', 'admin'],
-      default: 'member',
+      enum: USER_ROLE_VALUES,
+      default: USER_ROLES.MEMBER,
     },
 
     // Account lifecycle
     accountStatus: {
       type: String,
-      enum: ['active', 'suspended', 'banned'],
-      default: 'active',
+      enum: ACCOUNT_STATUS_VALUES,
+      default: ACCOUNT_STATUSES.ACTIVE,
     },
     verificationStatus: {
       type: String,
-      enum: ['unverified', 'pending', 'verified', 'rejected'],
-      default: 'unverified',
+      enum: VERIFICATION_STATUS_VALUES,
+      default: VERIFICATION_STATUSES.UNVERIFIED,
     },
     lastLoginAt: {
       type: Date,

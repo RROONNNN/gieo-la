@@ -4,6 +4,11 @@ const bcrypt        = require('bcryptjs');
 const User          = require('../models/User');
 const generateToken = require('../utils/generateToken');
 const {
+  USER_ROLES,
+  ACCOUNT_STATUSES,
+  VERIFICATION_STATUSES,
+} = require('../constants/userEnums');
+const {
   registerMemberSchema,
   registerNgoSchema,
   registerIndividualSchema,
@@ -56,9 +61,9 @@ const registerMember = async (req, res) => {
     name,
     email,
     password,
-    role:               'member',
-    accountStatus:      'active',
-    verificationStatus: 'unverified',
+    role:               USER_ROLES.MEMBER,
+    accountStatus:      ACCOUNT_STATUSES.ACTIVE,
+    verificationStatus: VERIFICATION_STATUSES.UNVERIFIED,
   });
 
   return res.status(201).json({
@@ -89,9 +94,9 @@ const registerNgo = async (req, res) => {
     name,
     email,
     password,
-    role:               'ngo',
-    accountStatus:      'active',
-    verificationStatus: 'pending',
+    role:               USER_ROLES.NGO,
+    accountStatus:      ACCOUNT_STATUSES.ACTIVE,
+    verificationStatus: VERIFICATION_STATUSES.PENDING,
     ngoProfile:         { organizationName, website: website || null, description: description || null },
   });
 
@@ -123,9 +128,9 @@ const registerIndividual = async (req, res) => {
     name,
     email,
     password,
-    role:               'individual',
-    accountStatus:      'active',
-    verificationStatus: 'pending',
+    role:               USER_ROLES.INDIVIDUAL,
+    accountStatus:      ACCOUNT_STATUSES.ACTIVE,
+    verificationStatus: VERIFICATION_STATUSES.PENDING,
   });
 
   return res.status(201).json({
@@ -153,7 +158,10 @@ const login = async (req, res) => {
     return res.status(401).json({ success: false, message: 'Email hoặc mật khẩu không đúng' });
   }
 
-  if (user.accountStatus === 'suspended' || user.accountStatus === 'banned') {
+  if (
+    user.accountStatus === ACCOUNT_STATUSES.SUSPENDED ||
+    user.accountStatus === ACCOUNT_STATUSES.BANNED
+  ) {
     return res.status(403).json({ success: false, message: 'Tài khoản đã bị khóa' });
   }
 
