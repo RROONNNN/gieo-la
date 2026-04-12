@@ -1,0 +1,16 @@
+{
+       "servers": {
+      "mongodb-mcp-server": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "mongodb-mcp-server@latest"
+        ],
+        "env": {
+          "MDB_MCP_CONNECTION_STRING": "mongodb+srv://db_gieo-la:22012004@cluster0.x3scbgb.mongodb.net/?appName=Cluster0",
+          "MDB_MCP_API_CLIENT_ID": "mdb_sa_id_69db4ca808486d32ba9ef698",
+          "MDB_MCP_API_CLIENT_SECRET": "mdb_sa_sk_oJtjsQFUoNG3mEtARdmqZ6lmJydQCJ6hfkQiOnf0"
+        }
+      }
+    }
+}

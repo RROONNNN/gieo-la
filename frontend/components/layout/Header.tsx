@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Leaf } from "lucide-react";
 import { MobileNav } from "./MobileNav";
+import { HeaderAuthSection } from "./HeaderAuthSection";
 
 const navLinks = [
   { href: "/", label: "Trang chủ" },
@@ -33,20 +34,9 @@ export function Header() {
           ))}
         </nav>
 
-        {/* Desktop Auth Buttons */}
+        {/* Desktop Auth */}
         <div className="hidden md:flex items-center gap-2">
-          <Link
-            href="/login"
-            className="rounded-lg px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
-          >
-            Đăng nhập
-          </Link>
-          <Link
-            href="/register"
-            className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
-          >
-            Đăng ký
-          </Link>
+          <HeaderAuthSection />
         </div>
 
         {/* Mobile Navigation */}

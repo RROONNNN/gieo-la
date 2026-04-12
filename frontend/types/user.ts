@@ -51,3 +51,32 @@ export interface UserRef {
   role: UserRole;
   badge: BadgeType;
 }
+
+/** Shape returned by GET /api/v1/users/:id — public profile */
+export interface PublicProfile {
+  _id: string;
+  name: string;
+  avatar: string | null;
+  role: UserRole;
+  verificationStatus: VerificationStatus;
+  accountStatus: AccountStatus;
+  badge: BadgeType;
+  completedDonations: number;
+  ngoProfile: NgoProfile | null;
+  location: { city: string | null };
+  createdAt: string;
+}
+
+/** Computed permissions passed to profile UI components */
+export interface ProfilePermissions {
+  canEdit: boolean;
+  canChat: boolean;
+}
+
+/** Props for the shared UserBadge display component */
+export interface UserBadgeProps {
+  role: UserRole;
+  verificationStatus: VerificationStatus;
+  badge: BadgeType;
+  size?: "sm" | "md";
+}

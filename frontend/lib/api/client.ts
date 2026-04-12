@@ -1,6 +1,7 @@
 import type { ApiResponse } from "@/types/api";
+import { BASE_URL } from "./endpoints";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const TOKEN_KEY = "la_lanh_token";
 
 class ApiError extends Error {
   constructor(
@@ -14,7 +15,7 @@ class ApiError extends Error {
 
 function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("token");
+  return localStorage.getItem(TOKEN_KEY);
 }
 
 async function request<T>(
@@ -38,9 +39,18 @@ async function request<T>(
   });
 
   if (response.status === 401 && typeof window !== "undefined") {
-    localStorage.removeItem("token");
+    localStorage.removeItem(TOKEN_KEY);
+    document.cookie = `${TOKEN_KEY}=; path=/; Max-Age=0`;
     window.location.href = "/login";
     throw new ApiError(401, "Phiên đăng nhập đã hết hạn");
+  }
+
+  if (response.status === 403 && typeof window !== "undefined") {
+    localStorage.removeItem(TOKEN_KEY);
+    document.cookie = `${TOKEN_KEY}=; path=/; Max-Age=0`;
+    window.dispatchEvent(new Event("auth:logout"));
+    window.location.href = "/login?reason=locked";
+    throw new ApiError(403, "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.");
   }
 
   const data: ApiResponse<T> = await response.json();
