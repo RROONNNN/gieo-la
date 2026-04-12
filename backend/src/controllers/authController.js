@@ -162,7 +162,10 @@ const login = async (req, res) => {
     user.accountStatus === ACCOUNT_STATUSES.SUSPENDED ||
     user.accountStatus === ACCOUNT_STATUSES.BANNED
   ) {
-    return res.status(403).json({ success: false, message: 'Tài khoản đã bị khóa' });
+    return res.status(403).json({
+      success: false,
+      message: 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.',
+    });
   }
 
   user.lastLoginAt = new Date();

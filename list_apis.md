@@ -35,6 +35,12 @@
 | PATCH | /api/v1/admin/users/:id/ngo-status | Admin | Update NGO status for a user |
 | PATCH | /api/v1/admin/users/:id/account-status | Admin | Update account status for a user |
 
+## 5) User Profile APIs
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | /api/v1/users/:id | Public | Get public profile of a user |
+
 ## Notes
 
 - All endpoints under `/api/v1/*` are mounted from backend router.

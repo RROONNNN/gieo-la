@@ -4,6 +4,7 @@ const { Router }            = require('express');
 const authRouter            = require('./authRoutes');
 const verificationRouter    = require('./verificationRoutes');
 const adminUserRouter       = require('./adminUserRoutes');
+const userRouter            = require('./userRoutes');
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.get('/', (req, res) => {
 router.use('/auth', authRouter);
 router.use('/verification-requests', verificationRouter);
 router.use('/admin/users', adminUserRouter);
+router.use('/users', userRouter);
 
 module.exports = router;
