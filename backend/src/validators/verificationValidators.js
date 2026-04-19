@@ -3,6 +3,7 @@
 const { z } = require('zod');
 const {
   USER_ROLES,
+  USER_ROLE_VALUES,
   ACCOUNT_STATUS_VALUES,
 } = require('../constants/userEnums');
 
@@ -23,7 +24,8 @@ const submitVerificationSchema = z.object({
   documents: z
     .array(documentSchema)
     .min(1, 'Cần ít nhất 1 tài liệu đính kèm')
-    .max(5, 'Tối đa 5 tài liệu'),
+    // Tối đa 10 loại giấy tờ × tối đa 5 ảnh mỗi loại = 50 ảnh
+    .max(50, 'Tối đa 50 ảnh minh chứng'),
   notes: z.string().max(1000).optional(),
 });
 
@@ -59,9 +61,35 @@ const updateAccountStatusSchema = z.object({
   reason: z.string().max(500).optional(),
 });
 
+/**
+ * Admin revoking Individual tích xanh (no grant — Individual role is granted
+ * only through the verification request flow, not directly by Admin).
+ */
+const updateIndividualStatusSchema = z.object({
+  action: z.literal('revoke', {
+    errorMap: () => ({ message: 'action phải là "revoke"' }),
+  }),
+  reason: z.string().max(500).optional(),
+});
+
+/**
+ * Query params for listing users (GET /admin/users).
+ */
+const listUsersQuerySchema = z.object({
+  role: z
+    .enum(USER_ROLE_VALUES, {
+      errorMap: () => ({ message: 'role không hợp lệ' }),
+    })
+    .optional(),
+  page: z.coerce.number().int().min(1).optional().default(1),
+  limit: z.coerce.number().int().min(1).max(20).optional().default(20),
+});
+
 module.exports = {
   submitVerificationSchema,
   rejectVerificationSchema,
   updateNgoStatusSchema,
+  updateIndividualStatusSchema,
+  listUsersQuerySchema,
   updateAccountStatusSchema,
 };

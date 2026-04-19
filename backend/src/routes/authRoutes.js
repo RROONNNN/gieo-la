@@ -7,6 +7,7 @@ const {
   registerIndividual,
   login,
   getMe,
+  refreshToken,
   updateMe,
 } = require('../controllers/authController');
 const { protect } = require('../middlewares/auth');
@@ -21,6 +22,7 @@ router.post('/login',               login);
 
 // ── Protected ─────────────────────────────────────────────────────────────────
 router.get('/me',   protect, getMe);
+router.post('/refresh-token', protect, refreshToken);
 router.patch('/me', protect, updateMe);
 
 module.exports = router;

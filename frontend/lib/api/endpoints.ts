@@ -7,10 +7,17 @@ export const ENDPOINTS = {
     REGISTER_NGO: `${API_BASE}/auth/register/ngo`,
     REGISTER_INDIVIDUAL: `${API_BASE}/auth/register/individual`,
     ME: `${API_BASE}/auth/me`,
+    REFRESH_TOKEN: `${API_BASE}/auth/refresh-token`,
   },
   VERIFICATION: {
     REQUEST: `${API_BASE}/verification-requests`,
-    LIST: `${API_BASE}/verification-requests`,
+    MY_REQUESTS: `${API_BASE}/verification-requests/me`,
+    ADMIN_LIST: `${API_BASE}/admin/users/verification-requests`,
+    ADMIN_APPROVE: (id: string) => `${API_BASE}/admin/users/verification-requests/${id}/approve`,
+    ADMIN_REJECT: (id: string) => `${API_BASE}/admin/users/verification-requests/${id}/reject`,
+  },
+  UPLOAD: {
+    IMAGE: `${API_BASE}/upload/image`,
   },
   HEALTH: `${API_BASE}/health`,
   USERS: {
