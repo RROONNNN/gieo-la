@@ -1,5 +1,42 @@
 # Notes
 
+## multer
+
+**Dùng để làm gì?**
+Middleware cho Express xử lý upload file (multipart/form-data). Lưu file vào disk hoặc memory, validate mimetype và kích thước trước khi handler chạy.
+
+### Ví dụ cơ bản
+```js
+const multer = require('multer');
+const path = require('path');
+
+const storage = multer.diskStorage({
+  destination: 'uploads/verifications/',
+  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  fileFilter: (req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    cb(null, allowed.includes(file.mimetype));
+  },
+});
+
+// Route
+router.post('/image', protect, upload.single('image'), uploadImageHandler);
+```
+
+### Lưu ý & Mẹo
+- `upload.single('fieldName')` — chỉ nhận 1 file với tên field đó
+- Lỗi `LIMIT_FILE_SIZE` phải được bắt trong error handler Express (multer ném ra `MulterError`)
+- Không set `Content-Type: application/json` khi gửi FormData từ frontend — browser tự thêm boundary
+- Thư mục `destination` phải tồn tại trước khi app chạy — tạo thủ công hoặc dùng `mkdirSync`
+- Để xem file đã upload, cần mount static: `app.use('/uploads', express.static('uploads'))`
+
+---
+
 ## Zod
 
 **Zod** là thư viện **schema validation** cho TypeScript/JavaScript.

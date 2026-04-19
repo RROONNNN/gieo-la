@@ -63,7 +63,7 @@ const registerMember = async (req, res) => {
     password,
     role:               USER_ROLES.MEMBER,
     accountStatus:      ACCOUNT_STATUSES.ACTIVE,
-    verificationStatus: VERIFICATION_STATUSES.UNVERIFIED,
+    verificationStatus: VERIFICATION_STATUSES.VERIFIED,
   });
 
   return res.status(201).json({
@@ -187,6 +187,19 @@ const getMe = async (req, res) => {
   });
 };
 
+// ── POST /refresh-token ─────────────────────────────────────────────────────
+const refreshToken = async (req, res) => {
+  // Always re-issue token from latest role in DB (req.user comes from protect)
+  return res.json({
+    success: true,
+    message: 'Làm mới phiên đăng nhập thành công',
+    data:    {
+      user: safeUser(req.user),
+      token: generateToken(req.user._id, req.user.role),
+    },
+  });
+};
+
 // ── PATCH /me ─────────────────────────────────────────────────────────────────
 const updateMe = async (req, res) => {
   const parsed = updateProfileSchema.safeParse(req.body);
@@ -223,4 +236,12 @@ const updateMe = async (req, res) => {
   });
 };
 
-module.exports = { registerMember, registerNgo, registerIndividual, login, getMe, updateMe };
+module.exports = {
+  registerMember,
+  registerNgo,
+  registerIndividual,
+  login,
+  getMe,
+  refreshToken,
+  updateMe,
+};

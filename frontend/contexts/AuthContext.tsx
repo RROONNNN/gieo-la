@@ -9,8 +9,8 @@ import {
 } from "react";
 import type { SafeUser } from "@/types/user";
 import {
-  getMeApi,
   loginApi,
+  refreshTokenApi,
   registerMemberApi,
   registerNgoApi,
   registerIndividualApi,
@@ -54,7 +54,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     try {
-      const res = await getMeApi();
+      const res = await refreshTokenApi();
+      setToken(res.data.token);
       setUser(res.data.user);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
@@ -74,6 +75,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     refreshUser().finally(() => setIsLoading(false));
+  }, [refreshUser]);
+
+  // Keep auth cookie/token aligned with latest role while user is active
+  useEffect(() => {
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
+    if (!token) return;
+
+    const syncSession = () => {
+      refreshUser().catch(() => undefined);
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") syncSession();
+    };
+
+    const intervalId = window.setInterval(syncSession, 60 * 1000);
+    window.addEventListener("focus", syncSession);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => { //clean up
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", syncSession);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
   }, [refreshUser]);
 
   // Handle forced logout when account is locked (dispatched by apiClient 403 handler)

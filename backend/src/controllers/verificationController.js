@@ -7,6 +7,8 @@ const {
   submitVerificationSchema,
   rejectVerificationSchema,
   updateNgoStatusSchema,
+  updateIndividualStatusSchema,
+  listUsersQuerySchema,
   updateAccountStatusSchema,
 } = require('../validators/verificationValidators');
 
@@ -321,12 +323,133 @@ const updateAccountStatus = async (req, res) => {
   });
 };
 
+/**
+ * PATCH /api/v1/admin/users/:id/individual-status
+ * Admin revokes the Individual tích xanh badge from a user account.
+ * Individual role is only granted via the verification-request approval flow,
+ * so this endpoint only supports action = "revoke".
+ */
+const updateIndividualStatus = async (req, res) => {
+  const parsed = updateIndividualStatusSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({
+      success: false,
+      message: 'Dữ liệu không hợp lệ',
+      errors: parsed.error.errors,
+    });
+  }
+
+  const { reason } = parsed.data;
+
+  const user = await User.findById(req.params.id);
+  if (!user) {
+    return res.status(404).json({ success: false, message: 'Không tìm thấy người dùng' });
+  }
+
+  if (user.role !== 'individual') {
+    return res.status(409).json({
+      success: false,
+      message: 'Người dùng không phải Individual hoặc chưa được xác minh',
+    });
+  }
+
+  user.role = 'member';
+  user.verificationStatus = 'unverified';
+  await user.save();
+
+  await logAudit(
+    req.user._id,
+    'User',
+    user._id,
+    'individual.badge_revoke',
+    { reason: reason || null },
+    req
+  );
+
+  return res.json({
+    success: true,
+    message: 'Đã thu hồi xác minh Individual',
+    data: {
+      user: {
+        _id: user._id,
+        name: user.name,
+        role: user.role,
+        verificationStatus: user.verificationStatus,
+      },
+    },
+  });
+};
+
+/**
+ * GET /api/v1/admin/users/:id
+ * Admin fetches a single user by ID.
+ */
+const getUser = async (req, res) => {
+  const user = await User.findById(req.params.id)
+    .select('name email role verificationStatus accountStatus ngoProfile.organizationName');
+  if (!user) {
+    return res.status(404).json({ success: false, message: 'Không tìm thấy người dùng' });
+  }
+  return res.json({ success: true, data: { user } });
+};
+
+/**
+ * GET /api/v1/admin/users/verification-requests/:id
+ * Admin fetches a single verification request by ID.
+ */
+const getVerificationRequest = async (req, res) => {
+  const request = await VerificationRequest.findById(req.params.id)
+    .populate('userId', 'name email role verificationStatus')
+    .populate('reviewedBy', 'name email');
+  if (!request) {
+    return res.status(404).json({ success: false, message: 'Không tìm thấy yêu cầu xác minh' });
+  }
+  return res.json({ success: true, data: { request } });
+};
+
+/**
+ * GET /api/v1/admin/users
+ * Admin lists users with optional role filter and pagination.
+ */
+const listUsers = async (req, res) => {
+  const parsed = listUsersQuerySchema.safeParse(req.query);
+  if (!parsed.success) {
+    return res.status(400).json({
+      success: false,
+      message: 'Tham số truy vấn không hợp lệ',
+      errors: parsed.error.errors,
+    });
+  }
+
+  const { role, page, limit } = parsed.data;
+  const filter = role ? { role } : {};
+  const skip = (page - 1) * limit;
+
+  const [users, total] = await Promise.all([
+    User.find(filter)
+      .select('name email role verificationStatus accountStatus ngoProfile.organizationName')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    User.countDocuments(filter),
+  ]);
+
+  return res.json({
+    success: true,
+    data: { users, total, page, limit },
+  });
+};
+
 module.exports = {
   submitVerification,
   getMyVerificationRequests,
   listVerificationRequests,
+  getVerificationRequest,
   approveVerification,
   rejectVerification,
   updateNgoStatus,
+  updateIndividualStatus,
+  listUsers,
+  getUser,
   updateAccountStatus,
 };

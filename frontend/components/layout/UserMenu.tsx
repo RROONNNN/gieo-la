@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, FileText, MessageCircle, LogOut, ChevronDown } from "lucide-react";
+import { User, FileText, MessageCircle, LogOut, ChevronDown, ShieldCheck, ClipboardList, Users } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/Badge";
 import { UserRole } from "@/types/enums";
@@ -55,6 +55,12 @@ export function UserMenu() {
     { href: "/my-posts", icon: FileText, label: "Bài đăng của tôi" },
     { href: "/messages", icon: MessageCircle, label: "Tin nhắn" },
   ];
+
+  // Additional role-based items
+  const isAdmin = user.role === UserRole.ADMIN;
+  const canVerify = user.role === UserRole.MEMBER ||
+    user.role === UserRole.INDIVIDUAL ||
+    user.role === UserRole.NGO;
 
   return (
     <div className="relative" ref={menuRef}>
@@ -115,6 +121,39 @@ export function UserMenu() {
                 {label}
               </Link>
             ))}
+
+            {canVerify && (
+              <Link
+                href="/verify"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+              >
+                <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+                Xác minh tài khoản
+              </Link>
+            )}
+
+            {isAdmin && (
+              <Link
+                href="/admin/verifications"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+              >
+                <ClipboardList className="h-4 w-4 text-muted-foreground" />
+                Duyệt đơn xác minh
+              </Link>
+            )}
+
+            {isAdmin && (
+              <Link
+                href="/admin/users"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+              >
+                <Users className="h-4 w-4 text-muted-foreground" />
+                Quản lý người dùng
+              </Link>
+            )}
           </div>
 
           <div className="border-t border-border p-1">

@@ -78,6 +78,10 @@ export function getMeApi(): Promise<ApiResponse<{ user: SafeUser }>> {
   return apiClient.get<{ user: SafeUser }>(ENDPOINTS.AUTH.ME);
 }
 
+export function refreshTokenApi(): Promise<ApiResponse<AuthResponseData>> {
+  return apiClient.post<AuthResponseData>(ENDPOINTS.AUTH.REFRESH_TOKEN);
+}
+
 export function updateProfileApi(
   payload: UpdateProfilePayload,
 ): Promise<ApiResponse<{ user: SafeUser }>> {
