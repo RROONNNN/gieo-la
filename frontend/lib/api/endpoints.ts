@@ -19,6 +19,26 @@ export const ENDPOINTS = {
   UPLOAD: {
     IMAGE: `${API_BASE}/upload/image`,
   },
+  POSTS: {
+    LIST: `${API_BASE}/posts`,
+    DETAIL: (id: string) => `${API_BASE}/posts/${id}`,
+    CREATE: `${API_BASE}/posts`,
+    UPDATE: (id: string) => `${API_BASE}/posts/${id}`,
+    DELETE: (id: string) => `${API_BASE}/posts/${id}`,
+    UPDATE_STATUS: (id: string) => `${API_BASE}/posts/${id}/status`,
+  },
+  APPLICATIONS: {
+    LIST: (postId: string) => `${API_BASE}/applications/${postId}`,
+    APPLY: (postId: string) => `${API_BASE}/applications/${postId}`,
+    SELECT: (postId: string) => `${API_BASE}/applications/${postId}/select`,
+    MY_LIMIT: `${API_BASE}/applications/my-limit`,
+  },
+  ADMIN_POSTS: {
+    LIST: `${API_BASE}/admin/posts`,
+    COMPLETE: (id: string) => `${API_BASE}/admin/posts/${id}/complete`,
+    PIN: (id: string) => `${API_BASE}/admin/posts/${id}/pin`,
+    DELETE: (id: string) => `${API_BASE}/admin/posts/${id}`,
+  },
   HEALTH: `${API_BASE}/health`,
   USERS: {
     PROFILE: (id: string) => `${API_BASE}/users/${id}`,

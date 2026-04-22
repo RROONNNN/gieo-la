@@ -52,6 +52,35 @@
 |---|---|---|---|
 | POST | /api/v1/upload/image | Authenticated | Upload a single image (JPG/PNG/WEBP, ≤5 MB); returns URL |
 
+## 7) Post APIs
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | /api/v1/posts | Public | List posts (filter by category, search, pagination; pinned first) |
+| GET | /api/v1/posts/:id | Public | Get single post detail (populates author) |
+| POST | /api/v1/posts | Authenticated | Create a new post |
+| PATCH | /api/v1/posts/:id | Authenticated | Update own post (only if status = available) |
+| DELETE | /api/v1/posts/:id | Authenticated | Delete own post |
+| PATCH | /api/v1/posts/:id/status | Authenticated | Change post status (available → in_transaction → traded) |
+
+## 8) Application APIs
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| POST | /api/v1/applications/:postId/apply | Authenticated | Apply for a post (verified NGO/Individual only; monthly limit enforced) |
+| GET | /api/v1/applications/:postId | Public | List applications for a post (sorted by role priority: NGO > Individual > Member) |
+| PATCH | /api/v1/applications/:postId/select/:applicantId | Authenticated | Author selects an applicant (sets post to in_transaction; rejects others) |
+| GET | /api/v1/applications/my-limit | Authenticated | Get current user's monthly application limit usage |
+
+## 9) Admin Post Management APIs
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | /api/v1/admin/posts | Admin | List all posts with admin filters |
+| PATCH | /api/v1/admin/posts/:id/complete | Admin | Mark post as completed (traded → completed; increments completedDonations) |
+| DELETE | /api/v1/admin/posts/:id | Admin | Admin-delete a post |
+| PATCH | /api/v1/admin/posts/:id/toggle-pin | Admin | Toggle pin status of a post |
+
 ## Notes
 
 - All endpoints under `/api/v1/*` are mounted from backend router.

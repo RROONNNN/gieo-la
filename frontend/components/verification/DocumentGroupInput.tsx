@@ -7,7 +7,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { BASE_URL } from "@/lib/api/endpoints";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const MAX_BYTES = 5 * 1024 * 1024;
+const MAX_BYTES = 20 * 1024 * 1024;
 
 interface DocumentGroupInputProps {
   index: number;
@@ -47,7 +47,7 @@ export function DocumentGroupInput({
         return;
       }
       if (file.size > MAX_BYTES) {
-        alert(`"${file.name}": Ảnh vượt quá giới hạn 5 MB.`);
+        alert(`"${file.name}": Ảnh vượt quá giới hạn 20 MB.`);
         e.target.value = "";
         return;
       }
@@ -134,7 +134,7 @@ export function DocumentGroupInput({
             "Chọn ảnh"
           )}
         </Button>
-        <span className="text-xs text-muted-foreground">JPG, PNG, WEBP — tối đa 5 MB/ảnh</span>
+        <span className="text-xs text-muted-foreground">JPG, PNG, WEBP — tối đa 20 MB/ảnh</span>
       </div>
 
       {uploadError && (

@@ -5,7 +5,7 @@ import { HeaderAuthSection } from "./HeaderAuthSection";
 
 const navLinks = [
   { href: "/", label: "Trang chủ" },
-  { href: "/forum", label: "Diễn đàn" },
+  { href: "/posts", label: "Diễn đàn" },
   { href: "/wishlist", label: "Wishlist" },
   { href: "/news", label: "Bản tin" },
   { href: "/leaderboard", label: "Bảng xếp hạng" },

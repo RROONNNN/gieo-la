@@ -78,3 +78,55 @@
 - `action + createdAt` (desc)
 
 **Relations:** actorId → User
+
+---
+
+## Post (`posts`)
+
+| Field | Type | Constraints |
+|---|---|---|
+| _id | ObjectId | auto |
+| author | ObjectId | required, ref: User |
+| title | String | required, trim, 5-120 chars |
+| category | String | required, enum: do_nam / do_nu / do_tre_em / phu_kien |
+| quantity | Number | required, min: 1 |
+| condition | String | required, enum: new_100 / new_90 / new_80 / custom |
+| conditionNote | String | trim, max 500 chars |
+| images | [String] | required, 1-5 URLs |
+| description | String | trim, max 2000 chars |
+| status | String | enum: available / in_transaction / traded / completed, default: available |
+| isPinned | Boolean | default: false |
+| selectedApplicant | ObjectId | ref: User, default: null |
+| location.city | String | default: null |
+| location.district | String | default: null |
+| createdAt | Date | auto (timestamps) |
+| updatedAt | Date | auto (timestamps) |
+
+**Indexes:**
+- Text index on `title + description`
+- `status + category + createdAt` (compound)
+- `author + createdAt`
+- `isPinned + createdAt`
+
+**Relations:** author → User, selectedApplicant → User
+
+---
+
+## Application (`applications`)
+
+| Field | Type | Constraints |
+|---|---|---|
+| _id | ObjectId | auto |
+| post | ObjectId | required, ref: Post |
+| applicant | ObjectId | required, ref: User |
+| message | String | trim, max 500 chars |
+| status | String | enum: pending / selected / rejected, default: pending |
+| createdAt | Date | auto (timestamps) |
+| updatedAt | Date | auto (timestamps) |
+
+**Indexes:**
+- `post + applicant` (unique compound)
+- `applicant + createdAt`
+- `post + status`
+
+**Relations:** post → Post, applicant → User

@@ -59,6 +59,30 @@ export const PostCategory = {
 } as const;
 export type PostCategory = (typeof PostCategory)[keyof typeof PostCategory];
 
+export const PostCondition = {
+  NEW_100: "new_100",
+  NEW_90: "new_90",
+  NEW_80: "new_80",
+  CUSTOM: "custom",
+} as const;
+export type PostCondition = (typeof PostCondition)[keyof typeof PostCondition];
+
+export const PostStatus = {
+  AVAILABLE: "available",
+  IN_TRANSACTION: "in_transaction",
+  TRADED: "traded",
+  COMPLETED: "completed",
+} as const;
+export type PostStatus = (typeof PostStatus)[keyof typeof PostStatus];
+
+export const ApplicationStatus = {
+  PENDING: "pending",
+  SELECTED: "selected",
+  REJECTED: "rejected",
+} as const;
+export type ApplicationStatus =
+  (typeof ApplicationStatus)[keyof typeof ApplicationStatus];
+
 // --- Audit domain enums ---
 
 export const AuditTargetType = {

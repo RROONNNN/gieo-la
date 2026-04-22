@@ -4,8 +4,11 @@ const { Router }            = require('express');
 const authRouter            = require('./authRoutes');
 const verificationRouter    = require('./verificationRoutes');
 const adminUserRouter       = require('./adminUserRoutes');
+const adminPostRouter       = require('./adminPostRoutes');
 const userRouter            = require('./userRoutes');
 const uploadRouter          = require('./uploadRoutes');
+const postRouter            = require('./postRoutes');
+const applicationRouter     = require('./applicationRoutes');
 
 const router = Router();
 
@@ -18,7 +21,10 @@ router.get('/', (req, res) => {
 router.use('/auth', authRouter);
 router.use('/verification-requests', verificationRouter);
 router.use('/admin/users', adminUserRouter);
+router.use('/admin/posts', adminPostRouter);
 router.use('/users', userRouter);
 router.use('/upload', uploadRouter);
+router.use('/posts', postRouter);
+router.use('/applications', applicationRouter);
 
 module.exports = router;

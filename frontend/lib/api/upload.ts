@@ -35,5 +35,5 @@ export async function uploadImage(file: File): Promise<string> {
     throw new Error(data.message || "Tải ảnh lên thất bại. Vui lòng thử lại.");
   }
 
-  return `${BASE_URL}${data.data.url}` as string;
+  return `${data.data.url}` as string;
 }

@@ -1,7 +1,21 @@
 REQUIREMENTS DOCUMENT — NỀN TẢNG "Lá Lành"
 Nền tảng chia sẻ đồ dùng cũ cộng đồng | Tech Stack: Next.js + Node.js + MongoDB
 ================================================================================
+Màu sắc (Palette):
 
+Chủ đạo (Primary): #2D4F36 (Xanh lá đậm - dùng cho Text, Button chính, Header).
+
+Phụ (Secondary): #C5D9B8 (Xanh lá nhạt - dùng cho các khung bo, thẻ bài viết).
+
+Nền (Background): #F9E4C8 (Cam sữa) và #FDFAF5 (Trắng kem).
+
+Font chữ:
+
+Tiêu đề (Headings): Playfair Display (font có chân, sang trọng).
+
+Nội dung (Body): Montserrat hoặc Be Vietnam Pro (không chân, hiện đại, dễ đọc).
+
+Phong cách thiết kế: Soft-edges (bo góc các khung 15px), sử dụng các đường nét mảnh như sợi chỉ (thread) để phân cách các phần.
 
 I. TỔNG QUAN HỆ THỐNG
 ----------------------
