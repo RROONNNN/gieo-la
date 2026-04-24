@@ -80,14 +80,33 @@ const listPostsQuerySchema = z.object({
       errorMap: () => ({ message: 'Trạng thái không hợp lệ' }),
     })
     .optional(),
-  search: z.string().max(200).optional(),
+  search: z.string().max(200).trim().optional(),
+  // Admin-only: search by author name / email
+  authorSearch: z.string().max(100).trim().optional(),
+  // Admin-only: date range (ISO date strings, e.g. 2025-01-01)
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
   page: z.coerce.number().int().min(1).optional().default(1),
   limit: z.coerce.number().int().min(1).max(50).optional().default(20),
 });
+
+const createCommentSchema = z
+  .object({
+    content: z.string().trim().max(500, 'Bình luận tối đa 500 ký tự').optional().default(''),
+    images: z
+      .array(z.string().url('URL ảnh không hợp lệ'))
+      .max(3, 'Tối đa 3 ảnh')
+      .optional()
+      .default([]),
+  })
+  .refine((d) => d.content.length > 0 || d.images.length > 0, {
+    message: 'Bình luận cần có nội dung hoặc ít nhất 1 ảnh',
+  });
 
 module.exports = {
   createPostSchema,
   updatePostSchema,
   updatePostStatusSchema,
   listPostsQuerySchema,
+  createCommentSchema,
 };

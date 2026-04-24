@@ -5,6 +5,7 @@ const {
   USER_ROLES,
   USER_ROLE_VALUES,
   ACCOUNT_STATUS_VALUES,
+  VERIFICATION_STATUS_VALUES,
 } = require('../constants/userEnums');
 
 // Single document metadata entry (URL only — binary stored in cloud storage)
@@ -66,8 +67,8 @@ const updateAccountStatusSchema = z.object({
  * only through the verification request flow, not directly by Admin).
  */
 const updateIndividualStatusSchema = z.object({
-  action: z.literal('revoke', {
-    errorMap: () => ({ message: 'action phải là "revoke"' }),
+  action: z.enum(['grant', 'revoke'], {
+    errorMap: () => ({ message: 'action phải là "grant" hoặc "revoke"' }),
   }),
   reason: z.string().max(500).optional(),
 });
@@ -81,8 +82,20 @@ const listUsersQuerySchema = z.object({
       errorMap: () => ({ message: 'role không hợp lệ' }),
     })
     .optional(),
+  // Search by name or email (regex, case-insensitive)
+  search: z.string().max(100).trim().optional(),
+  verificationStatus: z
+    .enum(VERIFICATION_STATUS_VALUES, {
+      errorMap: () => ({ message: 'verificationStatus không hợp lệ' }),
+    })
+    .optional(),
+  accountStatus: z
+    .enum(ACCOUNT_STATUS_VALUES, {
+      errorMap: () => ({ message: 'accountStatus không hợp lệ' }),
+    })
+    .optional(),
   page: z.coerce.number().int().min(1).optional().default(1),
-  limit: z.coerce.number().int().min(1).max(20).optional().default(20),
+  limit: z.coerce.number().int().min(1).max(50).optional().default(20),
 });
 
 module.exports = {

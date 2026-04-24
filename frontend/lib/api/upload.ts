@@ -37,3 +37,34 @@ export async function uploadImage(file: File): Promise<string> {
 
   return `${data.data.url}` as string;
 }
+
+export async function uploadFiles(files: File[]): Promise<string[]> {
+  return Promise.all(
+    files.map(async (file) => {
+      const token = getAuthToken();
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const headers: HeadersInit = {};
+      if (token) {
+        (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${BASE_URL}${ENDPOINTS.UPLOAD.FILE}`, {
+        method: "POST",
+        headers,
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || `Tải file "${file.name}" lên thất bại. Vui lòng thử lại.`
+        );
+      }
+
+      return data.data.url as string;
+    })
+  );
+}

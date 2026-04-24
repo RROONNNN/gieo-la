@@ -1,242 +1,167 @@
 "use client";
 
 import { useState } from "react";
+import { Upload, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-import { Spinner } from "@/components/ui/Spinner";
-import { DocumentGroupInput } from "./DocumentGroupInput";
-import { uploadImage } from "@/lib/api/upload";
 import { submitVerificationRequest } from "@/lib/api/verification";
-
-interface DocumentGroup {
-  label: string;
-  uploadedUrls: string[];
-  uploading: boolean;
-  uploadError: string | null;
-}
+import { uploadFiles } from "@/lib/api/upload";
 
 interface SubmitVerificationFormProps {
   hasPendingRequest: boolean;
   isAlreadyVerified: boolean;
-  rejectedReason?: string | null;
-  requestType?: "individual" | "ngo";
-}
-
-const MAX_GROUPS = 10;
-
-function createEmptyGroup(): DocumentGroup {
-  return { label: "", uploadedUrls: [], uploading: false, uploadError: null };
+  rejectedReason: string | null;
+  requestType: "individual" | "ngo";
 }
 
 export function SubmitVerificationForm({
   hasPendingRequest,
   isAlreadyVerified,
   rejectedReason,
-  requestType = "individual",
+  requestType,
 }: SubmitVerificationFormProps) {
-  const [groups, setGroups] = useState<DocumentGroup[]>([createEmptyGroup()]);
+  const router = useRouter();
   const [notes, setNotes] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  if (isAlreadyVerified) {
-    return (
-      <Card>
-        <p className="text-sm text-muted-foreground">Tài khoản của bạn đã được xác minh.</p>
-      </Card>
-    );
-  }
+  if (hasPendingRequest || isAlreadyVerified) return null;
 
-  if (hasPendingRequest) {
-    return (
-      <Card>
-        <p className="text-sm text-muted-foreground">Bạn đã có yêu cầu đang chờ duyệt.</p>
-      </Card>
-    );
-  }
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(e.target.files ?? []);
+    setFiles((prev) => [...prev, ...selected].slice(0, 5));
+    e.target.value = "";
+  };
 
-  if (success) {
-    return (
-      <Card>
-        <p className="text-sm font-semibold text-green-700">
-          Đơn xác minh đã được gửi thành công! Vui lòng chờ Admin duyệt.
-        </p>
-      </Card>
-    );
-  }
+  const removeFile = (index: number) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+  };
 
-  function handleLabelChange(idx: number, value: string) {
-    setGroups((prev) =>
-      prev.map((g, i) => (i === idx ? { ...g, label: value } : g)),
-    );
-  }
-
-  async function handleImagesAdded(idx: number, files: FileList) {
-    setGroups((prev) =>
-      prev.map((g, i) => (i === idx ? { ...g, uploading: true, uploadError: null } : g)),
-    );
-
-    const uploaded: string[] = [];
-    let errorMsg: string | null = null;
-
-    for (const file of Array.from(files)) {
-      try {
-        const url = await uploadImage(file);
-        uploaded.push(url);
-      } catch (err) {
-        errorMsg = err instanceof Error ? err.message : "Tải ảnh lên thất bại.";
-        break;
-      }
-    }
-
-    setGroups((prev) =>
-      prev.map((g, i) =>
-        i === idx
-          ? {
-              ...g,
-              uploading: false,
-              uploadedUrls: [...g.uploadedUrls, ...uploaded],
-              uploadError: errorMsg,
-            }
-          : g,
-      ),
-    );
-  }
-
-  function handleImageRemove(groupIdx: number, imageIdx: number) {
-    setGroups((prev) =>
-      prev.map((g, i) =>
-        i === groupIdx
-          ? { ...g, uploadedUrls: g.uploadedUrls.filter((_, j) => j !== imageIdx) }
-          : g,
-      ),
-    );
-  }
-
-  function handleGroupRemove(idx: number) {
-    setGroups((prev) => prev.filter((_, i) => i !== idx));
-  }
-
-  function handleAddGroup() {
-    if (groups.length >= MAX_GROUPS) return;
-    setGroups((prev) => [...prev, createEmptyGroup()]);
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitError(null);
-
-    const hasAnyImage = groups.some((g) => g.uploadedUrls.length > 0);
-    if (!hasAnyImage) {
-      setSubmitError("Cần ít nhất 1 ảnh minh chứng. Vui lòng tải ảnh lên.");
+    if (files.length === 0) {
+      setError("Vui lòng tải lên ít nhất 1 tài liệu");
       return;
     }
-
-    const isUploading = groups.some((g) => g.uploading);
-    if (isUploading) {
-      setSubmitError("Vui lòng chờ ảnh tải lên xong trước khi gửi đơn.");
-      return;
-    }
-
-    const documents = groups
-      .filter((g) => g.uploadedUrls.length > 0)
-      .flatMap((g) =>
-        g.uploadedUrls.map((url) => ({ url, label: g.label || null })),
-      );
-
+    setError(null);
     setSubmitting(true);
+
     try {
+      // Upload all files first
+      setUploading(true);
+      const urls = await uploadFiles(files);
+      setUploading(false);
+
+      const documents = urls.map((url, i) => ({
+        url,
+        label: files[i].name,
+      }));
+
       await submitVerificationRequest({
         requestType,
         documents,
         notes: notes.trim() || undefined,
       });
-      setSuccess(true);
+
+      router.refresh();
     } catch (err) {
-      setSubmitError(
-        err instanceof Error ? err.message : "Gửi đơn thất bại. Vui lòng thử lại.",
-      );
+      setError( err instanceof Error? err.message : "Đã xảy ra lỗi, vui lòng thử lại");
     } finally {
       setSubmitting(false);
+      setUploading(false);
     }
-  }
+  };
+
+  const typeLabel =
+    requestType === "ngo" ? "Tổ chức thiện nguyện (NGO)" : "Cá nhân hoàn cảnh khó khăn";
 
   return (
-    <Card>
-      <h2 className="text-base font-semibold text-foreground mb-4">Nộp đơn xác minh</h2>
+    <div className="rounded-[15px] border border-[var(--border-green)] bg-white p-6">
+      <h2 className="mb-1 font-heading text-lg font-semibold text-brand-darker">
+        Gửi yêu cầu xác thực
+      </h2>
+      <p className="mb-5 text-sm text-muted-foreground">
+        Loại tài khoản: <strong className="text-brand-darker">{typeLabel}</strong>
+      </p>
 
       {rejectedReason && (
-        <div className="rounded-lg border border-orange-300 bg-orange-50 px-4 py-3 mb-4">
-          <p className="text-sm font-medium text-orange-800">Lý do từ chối lần trước:</p>
-          <p className="text-sm text-orange-700 mt-1">{rejectedReason}</p>
+        <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <strong>Lý do bị từ chối trước:</strong> {rejectedReason}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-        <div className="space-y-3">
-          {groups.map((group, idx) => (
-            <DocumentGroupInput
-              key={idx}
-              index={idx}
-              label={group.label}
-              uploadedUrls={group.uploadedUrls}
-              uploading={group.uploading}
-              uploadError={group.uploadError}
-              onLabelChange={handleLabelChange}
-              onImagesAdded={handleImagesAdded}
-              onImageRemove={handleImageRemove}
-              onGroupRemove={handleGroupRemove}
-              canRemove={groups.length > 1}
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* File upload */}
+        <div>
+          <label className="mb-2 block text-sm font-medium text-brand-darker">
+            Tài liệu chứng minh <span className="text-red-500">*</span>
+          </label>
+          <p className="mb-3 text-xs text-muted-foreground">
+            {requestType === "ngo"
+              ? "Giấy phép hoạt động, quyết định thành lập tổ chức, v.v."
+              : "CCCD/CMND, xác nhận của địa phương, v.v."}
+          </p>
+
+          {/* Drop zone */}
+          <label className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed border-[var(--border-green)] bg-bg-cream px-6 py-8 text-center hover:border-brand-dark transition-colors">
+            <Upload className="size-6 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              Nhấn để chọn file (tối đa 5 file)
+            </span>
+            <input
+              type="file"
+              accept="image/*,.pdf"
+              multiple
+              className="hidden"
+              onChange={handleFileChange}
+              disabled={files.length >= 5}
             />
-          ))}
+          </label>
+
+          {/* Preview */}
+          {files.length > 0 && (
+            <ul className="mt-3 space-y-2">
+              {files.map((file, i) => (
+                <li
+                  key={i}
+                  className="flex items-center justify-between rounded-lg border border-[var(--border-green)] bg-white px-3 py-2 text-sm"
+                >
+                  <span className="truncate text-brand-darker">{file.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(i)}
+                    className="ml-2 shrink-0 text-muted-foreground hover:text-red-500 transition-colors"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
-        {groups.length < MAX_GROUPS && (
-          <Button type="button" variant="outline" size="sm" onClick={handleAddGroup}>
-            + Thêm loại giấy tờ
-          </Button>
-        )}
-
-        <div className="flex flex-col gap-1">
-          <label
-            htmlFor="verify-notes"
-            className="text-sm font-medium text-foreground"
-          >
-            {requestType === "ngo" ? "Ghi chú thêm" : "Mô tả hoàn cảnh"}{" "}
-            <span className="text-muted-foreground font-normal">(tuỳ chọn)</span>
+        {/* Notes */}
+        <div>
+          <label className="mb-2 block text-sm font-medium text-brand-darker">
+            Ghi chú thêm (tuỳ chọn)
           </label>
           <textarea
-            id="verify-notes"
-            rows={4}
-            placeholder={
-              requestType === "ngo"
-                ? "Thông tin bổ sung về tổ chức (không bắt buộc)..."
-                : "Chia sẻ thêm về hoàn cảnh của bạn để Admin hiểu rõ hơn..."
-            }
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            maxLength={1000}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+            placeholder="Mô tả thêm về hoàn cảnh hoặc tổ chức của bạn..."
+            rows={3}
+            className="w-full resize-none rounded-lg border border-[var(--border-green)] bg-bg-cream px-3 py-2.5 text-sm outline-none focus:ring-1 focus:ring-brand-dark"
           />
-          <p className="text-xs text-muted-foreground text-right">{notes.length}/1000</p>
         </div>
 
-        {submitError && (
-          <p className="text-sm text-red-600">{submitError}</p>
-        )}
+        {error && <p className="text-sm text-red-600">{error}</p>}
 
-        <Button type="submit" disabled={submitting}>
-          {submitting ? (
-            <>
-              <Spinner size="sm" />
-              <span className="ml-2">Đang gửi đơn...</span>
-            </>
-          ) : (
-            "Gửi đơn xác minh"
-          )}
+        <Button type="submit" disabled={submitting || uploading} className="w-full">
+          {uploading ? "Đang tải lên..." : submitting ? "Đang gửi..." : "Gửi yêu cầu xác thực"}
         </Button>
       </form>
-    </Card>
+    </div>
   );
 }

@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { fetchPosts } from "@/lib/api/posts";
 import { PostCard } from "@/components/posts/PostCard";
 import { PostFilters } from "@/components/posts/PostFilters";
+import { SearchBar } from "@/components/ui/SearchBar";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import type { PostCategory } from "@/types/enums";
+import { Post } from "@/types/post";
 
 export const metadata: Metadata = {
   title: "Diễn đàn",
@@ -13,7 +15,9 @@ export const metadata: Metadata = {
 interface PageProps {
   searchParams: Promise<{
     category?: string;
+    status?: string;
     search?: string;
+    city?: string;
     page?: string;
   }>;
 }
@@ -21,15 +25,17 @@ interface PageProps {
 export default async function PostsPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const category = params.category as PostCategory | undefined;
+  const status = params.status as import("@/types/enums").PostStatus | undefined;
   const search = params.search || undefined;
+  const city = params.city || undefined;
   const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
-  const limit = 20;
+  const limit = 12;
 
-  let posts: any[];
+  let posts: Post[];
   let total;
 
   try {
-    const data = await fetchPosts({ category, search, page, limit });
+    const data = await fetchPosts({ category, status, search, page, limit });
     posts = data.posts;
     total = data.total;
   } catch {
@@ -40,48 +46,49 @@ export default async function PostsPage({ searchParams }: PageProps) {
   const totalPages = Math.ceil(total / limit);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="py-10">
+      {/* Header */}
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Diễn đàn</h1>
+          <h1 className="font-heading text-4xl font-bold text-brand-darker">
+            Cộng đồng cho tặng
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Tìm đồ dùng cũ cần tặng hoặc đăng bài tặng đồ
+            {total} bài đăng
           </p>
         </div>
-        <Link href="/posts/create">
-          <Button>Đăng bài tặng đồ</Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/posts/create">
+            <Button>Đăng bài tặng đồ</Button>
+          </Link>
+        </div>
       </div>
 
-      <PostFilters currentCategory={category} currentSearch={search} />
+      {/* Search */}
+      <div className="mb-8 max-w-xl">
+        <SearchBar defaultValue={search} />
+      </div>
 
-      {posts.length > 0 ? (
-        <>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {posts.map((post) => (
-              <PostCard key={post._id} post={post} />
-            ))}
-          </div>
+      {/* 2-column layout */}
+      <div className="flex gap-8">
+        {/* Sidebar filters */}
+        <aside className="hidden w-[220px] shrink-0 lg:block">
+          <PostFilters currentCategory={category} currentSearch={search} />
+        </aside>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="mt-8 flex items-center justify-between text-sm text-muted-foreground">
-              <span>
-                {(page - 1) * limit + 1}–{Math.min(page * limit, total)} / {total} bài đăng
-              </span>
-              <div className="flex gap-2">
-                {page > 1 && (
-                  <Link
-                    href={`/posts?${new URLSearchParams({
-                      ...(category ? { category } : {}),
-                      ...(search ? { search } : {}),
-                      page: String(page - 1),
-                    })}`}
-                  >
-                    <Button size="sm" variant="outline">Trước</Button>
-                  </Link>
-                )}
-                {page < totalPages && (
+        {/* Main content */}
+        <div className="flex-1">
+          {posts.length > 0 ? (
+            <>
+              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                {posts.map((post) => (
+                  <PostCard key={post._id} post={post} />
+                ))}
+              </div>
+
+              {/* Load more */}
+              {page < totalPages && (
+                <div className="mt-10 text-center">
                   <Link
                     href={`/posts?${new URLSearchParams({
                       ...(category ? { category } : {}),
@@ -89,18 +96,20 @@ export default async function PostsPage({ searchParams }: PageProps) {
                       page: String(page + 1),
                     })}`}
                   >
-                    <Button size="sm" variant="outline">Sau</Button>
+                    <Button variant="outline" size="lg">
+                      Tải thêm bài đăng
+                    </Button>
                   </Link>
-                )}
-              </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="rounded-[15px] border border-[var(--border-green)] bg-white p-12 text-center text-muted-foreground">
+              Không tìm thấy bài đăng nào phù hợp.
             </div>
           )}
-        </>
-      ) : (
-        <div className="mt-8 rounded-xl border border-border bg-card p-12 text-center text-muted-foreground">
-          Không tìm thấy bài đăng nào phù hợp.
         </div>
-      )}
+      </div>
     </div>
   );
 }

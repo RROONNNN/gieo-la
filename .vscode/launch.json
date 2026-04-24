@@ -2,33 +2,68 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Backend: Node.js (nodemon)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/backend/node_modules/.bin/nodemon",
+      "program": "${workspaceFolder}/backend/src/app.js",
+      "cwd": "${workspaceFolder}/backend",
+      "restart": true,
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "NODE_ENV": "development",
+        "NODE_OPTIONS": "--tls-min-v1.2"
+      }
+    },
+    {
       "name": "Next.js: debug server-side",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm run dev -- --inspect",
-      "cwd": "${workspaceFolder}/frontend"
+      "cwd": "${workspaceFolder}/frontend",
+      "env": {
+        "NODE_ENV": "development"
+      }
     },
     {
-      "name": "Next.js: debug client-side",
+      "name": "Next.js: debug client-side (Chrome)",
       "type": "chrome",
       "request": "launch",
       "url": "http://localhost:3000",
-      "webRoot": "${workspaceFolder}/frontend"
+      "webRoot": "${workspaceFolder}/frontend",
+      "sourceMapPathOverrides": {
+        "webpack://_N_E/*": "${webRoot}/*"
+      }
     },
     {
       "name": "Next.js: debug full stack",
-      "type": "node",
+      "type": "node-terminal",
       "request": "launch",
-      "program": "${workspaceFolder}/frontend/node_modules/next/dist/bin/next",
+      "command": "npm run dev -- --inspect",
       "cwd": "${workspaceFolder}/frontend",
-      "runtimeArgs": ["dev", "--inspect"],
-      "skipFiles": ["<node_internals>/**"],
       "serverReadyAction": {
         "action": "debugWithChrome",
         "killOnServerStop": true,
         "pattern": "- Local:.+(https?://.+)",
         "uriFormat": "%s",
         "webRoot": "${workspaceFolder}/frontend"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Run All: Backend + Next.js (server + client)",
+      "configurations": [
+        "Backend: Node.js (nodemon)",
+        "Next.js: debug full stack"
+      ],
+      "stopAll": true,
+      "presentation": {
+        "hidden": false,
+        "group": "run-all",
+        "order": 1
       }
     }
   ]

@@ -1,16 +1,21 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
-import { MapPin, User, Calendar, Package } from "lucide-react";
+import { MapPin, Share2, Bookmark, ChevronRight } from "lucide-react";
 import { fetchPost } from "@/lib/api/posts";
 import { fetchApplications } from "@/lib/api/applications";
+import { fetchComments } from "@/lib/api/comments";
 import { Badge } from "@/components/ui/Badge";
-import { formatDateVN } from "@/lib/utils";
-import { CATEGORY_LABEL, CONDITION_LABEL, STATUS_LABEL, STATUS_VARIANT } from "@/lib/postLabels";
-import { getCurrentUserFromCookie } from "@/lib/auth/server";
-import { PostActions } from "@/components/posts/PostActions";
+import { Avatar } from "@/components/ui/Avatar";
+import { PostGallery } from "@/components/posts/PostGallery";
+import { PostStats } from "@/components/posts/PostStats";
 import { ApplicationPanel } from "@/components/posts/ApplicationPanel";
+import { PostOwnerActions } from "@/components/posts/PostOwnerActions";
+import { CommentSection } from "@/components/posts/CommentSection";
+import { formatRelativeTimeVN } from "@/lib/utils";
+import { CATEGORY_LABEL, STATUS_LABEL, STATUS_VARIANT } from "@/lib/postLabels";
+import { getCurrentUserFromCookie } from "@/lib/auth/server";
 import type { Application } from "@/types/application";
+import type { PostComment } from "@/types/comment";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -26,131 +31,140 @@ export default async function PostDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  let applications: Application[];
-  try {
-    applications = await fetchApplications(id);
-  } catch {
-    applications = [];
-  }
+  const [applications, initialComments, viewer] = await Promise.all([
+    fetchApplications(id).catch((): Application[] => []),
+    fetchComments(id).catch((): PostComment[] => []),
+    getCurrentUserFromCookie(),
+  ]);
 
-  const viewer = await getCurrentUserFromCookie();
-  const isAuthor = viewer !== null && viewer._id === (typeof post.author === "string" ? post.author : post.author._id);
+  const author = typeof post.author === "string" ? null : post.author;
+  const authorId = author?._id || (typeof post.author === "string" ? post.author : "");
+  const isAuthor = viewer !== null && viewer._id === authorId;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Image gallery */}
-      <div className="mb-6 grid gap-2 sm:grid-cols-2">
-        {post.images.map((img, i) => (
-          <div
-            key={i}
-            className={`relative overflow-hidden rounded-xl bg-muted ${
-              i === 0 ? "sm:col-span-2 aspect-[16/9]" : "aspect-[4/3]"
-            }`}
-          >
-            <Image
-              src={img}
-              alt={`${post.title} - ảnh ${i + 1}`}
-              fill
-              className="object-cover"
-              sizes={i === 0 ? "100vw" : "50vw"}
-              priority={i === 0}
-            />
+    <div className="py-10">
+      {/* Breadcrumb */}
+      <nav className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
+        <Link href="/posts" className="hover:text-brand-dark">
+          Diễn đàn
+        </Link>
+        <ChevronRight className="size-3" />
+        <span className="text-brand-darker">
+          {CATEGORY_LABEL[post.category] || post.category}
+        </span>
+        {post.location?.city && (
+          <>
+            <ChevronRight className="size-3" />
+            <span className="text-brand-darker">{post.location.city}</span>
+          </>
+        )}
+      </nav>
+
+      {/* Title + author row */}
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="mb-3 flex flex-wrap gap-2">
+            {post.isPinned && <Badge variant="pinned">Ghim</Badge>}
+            <Badge variant={STATUS_VARIANT[post.status] ?? "default"}>
+              {STATUS_LABEL[post.status]}
+            </Badge>
           </div>
-        ))}
+          <h1 className="font-heading text-3xl font-bold text-brand-darker">
+            {post.title}
+          </h1>
+        </div>
+        <div className="flex items-center gap-3">
+          <button className="flex size-10 items-center justify-center rounded-full border border-[var(--border-green)] text-muted-foreground hover:text-brand-dark transition-colors">
+            <Share2 className="size-5" />
+          </button>
+          <button className="flex size-10 items-center justify-center rounded-full border border-[var(--border-green)] text-muted-foreground hover:text-brand-dark transition-colors">
+            <Bookmark className="size-5" />
+          </button>
+        </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Main content */}
-        <div className="lg:col-span-2 space-y-6">
+      {/* Author info */}
+      {author && (
+        <Link
+          href={`/profile/${author._id}`}
+          className="mb-8 inline-flex items-center gap-3 group"
+        >
+          <Avatar src={author.avatar} alt={author.name} size="md" showOnline />
           <div>
-            <div className="mb-3 flex flex-wrap gap-2">
-              {post.isPinned && (
-                <Badge variant="warning">Ghim</Badge>
+            <p className="text-sm font-medium text-brand-darker group-hover:underline">
+              {author.name}
+              {author.role === "ngo" && (
+                <span className="ml-1 text-blue-500" title="NGO Xác thực">
+                  ✓
+                </span>
               )}
-              <Badge variant={STATUS_VARIANT[post.status] ?? "default"}>
-                {STATUS_LABEL[post.status]}
-              </Badge>
-              <Badge variant="info">{CATEGORY_LABEL[post.category]}</Badge>
-            </div>
-            <h1 className="text-2xl font-bold text-foreground">{post.title}</h1>
+            </p>
+            <p className="flex items-center gap-1 text-xs text-muted-foreground">
+              <MapPin className="size-3" />
+              {post.location?.city || "Hà Nội"} &middot;{" "}
+              Đăng {formatRelativeTimeVN(post.createdAt)}
+            </p>
           </div>
+        </Link>
+      )}
 
-          <div className="grid grid-cols-2 gap-4 rounded-xl border border-border bg-card p-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Package className="h-4 w-4" />
-              <span>Số lượng: <strong className="text-foreground">{post.quantity}</strong></span>
+      {/* 2-column layout */}
+      <div className="flex flex-col gap-8 lg:flex-row">
+        {/* Main content */}
+        <div className="flex-1 space-y-8">
+          {/* Gallery */}
+          <PostGallery images={post.images} title={post.title} />
+
+          {/* Stats */}
+          <PostStats
+            quantity={post.quantity}
+            condition={post.condition}
+            category={post.category}
+          />
+
+          {/* Description */}
+          {post.description && (
+            <div>
+              <h2 className="mb-3 font-heading text-xl font-semibold text-brand-darker">
+                Câu chuyện chia sẻ
+              </h2>
+              <div className="rounded-[15px] border border-[var(--border-green)] bg-white p-6">
+                <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">
+                  {post.description}
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>Tình trạng: <strong className="text-foreground">{CONDITION_LABEL[post.condition]}</strong></span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <MapPin className="h-4 w-4" />
-              <span>{post.location?.city || "Hà Nội"}{post.location?.district ? `, ${post.location.district}` : ""}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>{formatDateVN(post.createdAt)}</span>
-            </div>
-          </div>
+          )}
 
           {post.conditionNote && (
-            <div className="rounded-xl border border-border bg-card p-4">
-              <h3 className="mb-2 font-medium text-foreground">Ghi chú tình trạng</h3>
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{post.conditionNote}</p>
+            <div className="rounded-[15px] border border-[var(--border-green)] bg-white p-6">
+              <h3 className="mb-2 font-medium text-brand-darker">
+                Ghi chú tình trạng
+              </h3>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                {post.conditionNote}
+              </p>
             </div>
           )}
 
-          {post.description && (
-            <div className="rounded-xl border border-border bg-card p-4">
-              <h3 className="mb-2 font-medium text-foreground">Mô tả</h3>
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{post.description}</p>
-            </div>
-          )}
-
-          {/* Author info */}
-          <div className="rounded-xl border border-border bg-card p-4">
-            <h3 className="mb-3 font-medium text-foreground">Người đăng</h3>
-            {typeof post.author !== "string" && (
-              <Link href={`/profile/${post.author._id}`} className="flex items-center gap-3 group">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900">
-                  {post.author.avatar ? (
-                    <Image
-                      src={post.author.avatar}
-                      alt={post.author.name}
-                      width={40}
-                      height={40}
-                      className="rounded-full"
-                    />
-                  ) : (
-                    <User className="h-5 w-5 text-primary-600" />
-                  )}
-                </div>
-                <div>
-                  <p className="font-medium text-foreground group-hover:text-primary-600">
-                    {post.author.name}
-                    {post.author.role === "ngo" && (
-                      <span className="ml-1.5 text-blue-500" title="NGO Xác thực">✓</span>
-                    )}
-                  </p>
-                  <p className="text-xs text-muted-foreground capitalize">{post.author.role}</p>
-                </div>
-              </Link>
-            )}
-          </div>
+          {/* Comments */}
+          <CommentSection postId={post._id} initialComments={initialComments} />
         </div>
 
-        {/* Sidebar: Actions & Applications */}
-        <div className="space-y-4">
-          <PostActions post={post} isAuthor={isAuthor} viewerRole={viewer?.role ?? null} />
+        {/* Sidebar */}
+        <aside className="w-full shrink-0 lg:sticky lg:top-20 lg:w-[350px] lg:self-start space-y-4">
+          <PostOwnerActions
+            postId={post._id}
+            postStatus={post.status}
+            isAuthor={isAuthor}
+          />
           <ApplicationPanel
             postId={post._id}
             postStatus={post.status}
+            postAuthorId={authorId}
             applications={applications}
-            isAuthor={isAuthor}
-            viewerRole={viewer?.role ?? null}
-            viewerId={viewer?._id ?? null}
           />
-        </div>
+        </aside>
       </div>
     </div>
   );

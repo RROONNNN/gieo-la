@@ -1,36 +1,36 @@
-import { forwardRef, type InputHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
+import type { InputHTMLAttributes } from "react";
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
 }
 
-const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, id, ...props }, ref) => {
-    return (
-      <div className="flex flex-col gap-1.5">
-        {label && (
-          <label htmlFor={id} className="text-sm font-medium text-foreground">
-            {label}
-          </label>
+export function Input({ label, error, id, className, ...props }: InputProps) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      {label && (
+        <label
+          htmlFor={id}
+          className="text-sm font-medium text-gray-700"
+        >
+          {label}
+        </label>
+      )}
+      <input
+        id={id}
+        className={cn(
+          "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 transition-colors",
+          "focus:outline-none focus:ring-2 focus:ring-brand-dark focus:border-transparent",
+          "disabled:cursor-not-allowed disabled:opacity-50",
+          error && "border-red-400 focus:ring-red-400",
+          className,
         )}
-        <input
-          ref={ref}
-          id={id}
-          className={cn(
-            "h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50",
-            error && "border-red-500 focus:ring-red-500",
-            className,
-          )}
-          {...props}
-        />
-        {error && <p className="text-xs text-red-500">{error}</p>}
-      </div>
-    );
-  },
-);
-Input.displayName = "Input";
-
-export { Input };
-export type { InputProps };
+        {...props}
+      />
+      {error && (
+        <p className="text-xs text-red-500">{error}</p>
+      )}
+    </div>
+  );
+}

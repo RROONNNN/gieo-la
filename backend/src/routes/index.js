@@ -9,6 +9,7 @@ const userRouter            = require('./userRoutes');
 const uploadRouter          = require('./uploadRoutes');
 const postRouter            = require('./postRoutes');
 const applicationRouter     = require('./applicationRoutes');
+const commentRouter         = require('./commentRoutes');
 
 const router = Router();
 
@@ -26,5 +27,6 @@ router.use('/users', userRouter);
 router.use('/upload', uploadRouter);
 router.use('/posts', postRouter);
 router.use('/applications', applicationRouter);
+router.use('/posts/:postId/comments', commentRouter);
 
 module.exports = router;

@@ -18,6 +18,7 @@ export const ENDPOINTS = {
   },
   UPLOAD: {
     IMAGE: `${API_BASE}/upload/image`,
+    FILE: `${API_BASE}/upload/file`,
   },
   POSTS: {
     LIST: `${API_BASE}/posts`,
@@ -38,6 +39,12 @@ export const ENDPOINTS = {
     COMPLETE: (id: string) => `${API_BASE}/admin/posts/${id}/complete`,
     PIN: (id: string) => `${API_BASE}/admin/posts/${id}/pin`,
     DELETE: (id: string) => `${API_BASE}/admin/posts/${id}`,
+  },
+  COMMENTS: {
+    LIST: (postId: string) => `${API_BASE}/posts/${postId}/comments`,
+    CREATE: (postId: string) => `${API_BASE}/posts/${postId}/comments`,
+    DELETE: (postId: string, commentId: string) =>
+      `${API_BASE}/posts/${postId}/comments/${commentId}`,
   },
   HEALTH: `${API_BASE}/health`,
   USERS: {

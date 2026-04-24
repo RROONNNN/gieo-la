@@ -96,7 +96,7 @@ const registerNgo = async (req, res) => {
     password,
     role:               USER_ROLES.NGO,
     accountStatus:      ACCOUNT_STATUSES.ACTIVE,
-    verificationStatus: VERIFICATION_STATUSES.PENDING,
+    verificationStatus: VERIFICATION_STATUSES.UNVERIFIED,
     ngoProfile:         { organizationName, website: website || null, description: description || null },
   });
 
@@ -130,7 +130,7 @@ const registerIndividual = async (req, res) => {
     password,
     role:               USER_ROLES.INDIVIDUAL,
     accountStatus:      ACCOUNT_STATUSES.ACTIVE,
-    verificationStatus: VERIFICATION_STATUSES.PENDING,
+    verificationStatus: VERIFICATION_STATUSES.UNVERIFIED,
   });
 
   return res.status(201).json({

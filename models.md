@@ -130,3 +130,17 @@
 - `post + status`
 
 **Relations:** post → Post, applicant → User
+
+## PostComment (`postcomments`)
+
+| Field | Type | Constraints |
+|---|---|---|
+| _id | ObjectId | auto |
+| post | ObjectId | required, ref: 'Post' |
+| author | ObjectId | required, ref: 'User' |
+| content | String | required, trim, maxlength: 500 |
+| createdAt | Date | auto (timestamps) |
+| updatedAt | Date | auto (timestamps) |
+
+**Indexes:** `{ post: 1, createdAt: 1 }`
+**Relations:** post → Post, author → User

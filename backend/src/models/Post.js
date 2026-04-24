@@ -6,7 +6,6 @@ const {
   POST_CONDITION_VALUES,
   POST_STATUS_VALUES,
   POST_STATUSES,
-  POST_CATEGORIES,
 } = require('../constants/postEnums');
 
 const postSchema = new mongoose.Schema(

@@ -1,160 +1,161 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { HandHeart, Users } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { applyForPost, selectApplicant } from "@/lib/api/applications";
+import { Avatar } from "@/components/ui/Avatar";
+import { Badge } from "@/components/ui/Badge";
+import { useAuth } from "@/hooks/useAuth";
+import { applyForPost } from "@/lib/api/applications";
 import type { Application } from "@/types/application";
-import type { UserRole } from "@/types/enums";
-import { User } from "lucide-react";
 
-interface Props {
+interface ApplicationPanelProps {
   postId: string;
   postStatus: string;
+  postAuthorId: string;
   applications: Application[];
-  isAuthor: boolean;
-  viewerRole: UserRole | null;
-  viewerId: string | null;
 }
+
+const ROLE_LABELS: Record<string, string> = {
+  ngo: "Tổ chức",
+  individual: "Cá nhân",
+  member: "Thành viên",
+};
 
 export function ApplicationPanel({
   postId,
   postStatus,
-  applications,
-  isAuthor,
-  viewerRole,
-  viewerId,
-}: Props) {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  postAuthorId,
+  applications: initialApplications,
+}: ApplicationPanelProps) {
+  const { user, isAuthenticated } = useAuth();
+  const [applications, setApplications] = useState(initialApplications);
   const [message, setMessage] = useState("");
-  const [showForm, setShowForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
-  const hasApplied = applications.some(
-    (a) => (typeof a.applicant === "string" ? a.applicant : a.applicant._id) === viewerId
+  const isAuthor = user?._id === postAuthorId;
+  const canApply =
+    postStatus === "available" &&
+    isAuthenticated &&
+    !isAuthor &&
+    (user?.role === "ngo" || user?.role === "individual") &&
+    user?.verificationStatus === "verified";
+  const alreadyApplied = applications.some(
+    (app) => {
+      const applicantId = typeof app.applicant === "string" ? app.applicant : app.applicant._id;
+      return applicantId === user?._id;
+    },
   );
 
-  const canApply =
-    viewerId !== null &&
-    !isAuthor &&
-    postStatus === "available" &&
-    !hasApplied &&
-    (viewerRole === "individual" || viewerRole === "ngo");
-
-  async function handleApply(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
+  const handleApply = async () => {
+    if (!message.trim()) {
+      setError("Vui lòng mô tả hoàn cảnh / lý do muốn nhận");
+      return;
+    }
+    setIsSubmitting(true);
+    setError(null);
     try {
-      await applyForPost(postId, message.trim());
-      setShowForm(false);
+      const result = await applyForPost(postId, message);
+      setApplications((prev) => [...prev, result.data.application]);
+      setSuccess(true);
       setMessage("");
-      router.refresh();
-    } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Có lỗi xảy ra");
+    } catch (err: any) {
+      setError(err.message || "Không thể đăng ký nhận đồ");
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
-  }
-
-  async function handleSelect(applicantId: string) {
-    if (!confirm("Bạn có chắc chọn người nhận này?")) return;
-    setLoading(true);
-    try {
-      await selectApplicant(postId, applicantId);
-      router.refresh();
-    } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Có lỗi xảy ra");
-    } finally {
-      setLoading(false);
-    }
-  }
+  };
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 space-y-4">
-      <h3 className="font-medium text-foreground">
-        Người muốn nhận ({applications.length})
-      </h3>
+    <div className="rounded-[15px] border border-[var(--border-green)] bg-white p-6">
+      {/* CTA section */}
+      {postStatus === "available" && (
+        <div className="mb-6">
+          <h3 className="flex items-center gap-2 font-heading text-lg font-semibold text-brand-darker">
+            <HandHeart className="size-5" />
+            Trở thành người nhận
+          </h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Mô tả hoàn cảnh và lý do bạn muốn nhận món đồ này
+          </p>
 
-      {/* Apply button / form */}
-      {canApply && !showForm && (
-        <Button className="w-full" onClick={() => setShowForm(true)}>
-          Xin nhận đồ
-        </Button>
-      )}
-      {hasApplied && (
-        <p className="text-sm text-green-600">Bạn đã gửi yêu cầu nhận đồ</p>
+          {canApply && !alreadyApplied && !success && (
+            <div className="mt-4 space-y-3">
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Mô tả hoàn cảnh / lý do..."
+                rows={3}
+                className="w-full rounded-lg border border-[var(--border-green)] bg-bg-cream p-3 text-sm outline-none focus:ring-1 focus:ring-brand-dark resize-none"
+              />
+              {error && <p className="text-sm text-red-600">{error}</p>}
+              <Button
+                onClick={handleApply}
+                disabled={isSubmitting}
+                className="w-full"
+              >
+                {isSubmitting ? "Đang gửi..." : "Đăng ký nhận đồ"}
+              </Button>
+            </div>
+          )}
+
+          {(alreadyApplied || success) && (
+            <div className="mt-4 rounded-lg bg-brand-light/30 p-3 text-sm text-brand-dark">
+              Bạn đã đăng ký nhận đồ thành công!
+            </div>
+          )}
+        </div>
       )}
 
-      {showForm && (
-        <form onSubmit={handleApply} className="space-y-2">
-          <textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Lời nhắn (tuỳ chọn)..."
-            className="w-full rounded-lg border border-border bg-background p-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary-500 focus:outline-none"
-            rows={3}
-            maxLength={500}
-          />
-          <div className="flex gap-2">
-            <Button type="submit" size="sm" disabled={loading}>
-              Gửi
-            </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => setShowForm(false)} disabled={loading}>
-              Huỷ
-            </Button>
-          </div>
-        </form>
-      )}
+      {/* Applications list */}
+      <div>
+        <h4 className="flex items-center gap-2 text-sm font-semibold text-brand-darker">
+          <Users className="size-4" />
+          Danh sách đăng ký ({applications.length})
+        </h4>
 
-      {/* Application list */}
-      {applications.length > 0 && (
-        <ul className="divide-y divide-border">
-          {applications.map((app) => {
-            const applicant = typeof app.applicant === "string" ? null : app.applicant;
-            return (
-              <li key={app._id} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900">
-                    <User className="h-4 w-4 text-primary-600" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {applicant?.name ?? "Ẩn danh"}
-                      {applicant?.role === "ngo" && (
-                        <span className="ml-1 text-blue-500" title="NGO">✓</span>
-                      )}
+        <div className="mt-3 space-y-3">
+          {applications.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Chưa có ai đăng ký</p>
+          ) : (
+            applications.map((app) => {
+              const applicant =
+                typeof app.applicant === "string" ? null : app.applicant;
+              return (
+                <div
+                  key={app._id}
+                  className="flex items-center gap-3 rounded-lg border border-[var(--border-green)] p-3"
+                >
+                  <Avatar
+                    src={applicant?.avatar}
+                    alt={applicant?.name}
+                    size="sm"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-brand-darker">
+                      {applicant?.name || "Ẩn danh"}
                     </p>
-                    {app.message && (
-                      <p className="text-xs text-muted-foreground line-clamp-1">{app.message}</p>
-                    )}
-                    {app.status === "selected" && (
-                      <span className="text-xs font-medium text-green-600">Đã chọn</span>
-                    )}
-                    {app.status === "rejected" && (
-                      <span className="text-xs text-red-500">Bị từ chối</span>
-                    )}
+                    <Badge
+                      variant={
+                        applicant?.role === "ngo"
+                          ? "role-ngo"
+                          : applicant?.role === "individual"
+                            ? "role-individual"
+                            : "role-member"
+                      }
+                      className="text-[10px] px-2 py-0.5"
+                    >
+                      {ROLE_LABELS[applicant?.role || "member"]}
+                    </Badge>
                   </div>
                 </div>
-                {isAuthor && postStatus === "available" && app.status === "pending" && (
-                  <Button
-                    size="sm"
-                    onClick={() => handleSelect(typeof app.applicant === "string" ? app.applicant : app.applicant._id)}
-                    disabled={loading}
-                  >
-                    Chọn
-                  </Button>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      )}
-
-      {!viewerId && postStatus === "available" && (
-        <p className="text-sm text-muted-foreground text-center">
-          <a href="/login" className="text-primary-600 hover:underline">Đăng nhập</a> để nhận đồ
-        </p>
-      )}
+              );
+            })
+          )}
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,31 +1,60 @@
-import { Leaf } from "lucide-react";
+import Link from "next/link";
+
+const FOOTER_LINKS = [
+  { href: "/privacy", label: "Privacy Policy" },
+  { href: "/terms", label: "Terms of Service" },
+  { href: "/partners", label: "Partner NGOs" },
+  { href: "/contact", label: "Contact Us" },
+];
+
+const NGO_LOGOS = ["UNICEF", "Red Cross", "Oxfam", "Save the Children"];
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-muted/50">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* NGO Logos Section */}
-        <div className="mb-6">
-          <p className="mb-3 text-center text-sm font-medium text-muted-foreground">
-            Đối tác thiện nguyện
+    <footer className="border-t border-[var(--border-green)] bg-bg-cream">
+      <div className="mx-auto max-w-[1280px] px-6 py-12 lg:px-[70px]">
+        {/* Logo */}
+        <div className="text-center">
+          <Link
+            href="/"
+            className="font-heading text-2xl font-bold text-brand-dark"
+          >
+            Lá Lành
+          </Link>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Nurturing altruism through community sharing
           </p>
-          <div className="flex items-center justify-center gap-8 overflow-x-auto py-2">
-            {/* Placeholder for NGO logos — will be populated later */}
-            <div className="h-10 w-24 rounded bg-muted animate-pulse" />
-            <div className="h-10 w-24 rounded bg-muted animate-pulse" />
-            <div className="h-10 w-24 rounded bg-muted animate-pulse" />
-          </div>
         </div>
 
-        <div className="flex flex-col items-center gap-4 border-t border-border pt-6 sm:flex-row sm:justify-between">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Leaf className="h-4 w-4 text-primary-600" />
-            <span>&copy; {new Date().getFullYear()} Lá Lành. Tất cả quyền được bảo lưu.</span>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Nền tảng chia sẻ đồ dùng cũ cộng đồng
-          </p>
+        {/* NGO logos */}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-8">
+          {NGO_LOGOS.map((name) => (
+            <span
+              key={name}
+              className="text-sm font-medium text-muted-foreground"
+            >
+              {name}
+            </span>
+          ))}
         </div>
+
+        {/* Links */}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
+          {FOOTER_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-sm text-muted-foreground hover:text-brand-dark transition-colors"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+
+        {/* Copyright */}
+        <p className="mt-8 text-center text-xs text-muted-foreground">
+          &copy; {new Date().getFullYear()} Lá Lành. All rights reserved.
+        </p>
       </div>
     </footer>
   );

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { RoleSelector } from "@/components/auth/RoleSelector";
 import { Card } from "@/components/ui/Card";
 
+
 export const metadata: Metadata = {
   title: "Đăng ký",
 };

@@ -37,7 +37,7 @@
 | PATCH | /api/v1/admin/users/verification-requests/:id/approve | Admin | Approve verification request |
 | PATCH | /api/v1/admin/users/verification-requests/:id/reject | Admin | Reject verification request |
 | PATCH | /api/v1/admin/users/:id/ngo-status | Admin | Grant or revoke NGO tích xanh badge |
-| PATCH | /api/v1/admin/users/:id/individual-status | Admin | Revoke Individual tích xanh badge |
+| PATCH | /api/v1/admin/users/:id/individual-status | Admin |Grant or Revoke Individual tích xanh badge |
 | PATCH | /api/v1/admin/users/:id/account-status | Admin | Update account status for a user |
 
 ## 5) User Profile APIs
@@ -80,6 +80,14 @@
 | PATCH | /api/v1/admin/posts/:id/complete | Admin | Mark post as completed (traded → completed; increments completedDonations) |
 | DELETE | /api/v1/admin/posts/:id | Admin | Admin-delete a post |
 | PATCH | /api/v1/admin/posts/:id/toggle-pin | Admin | Toggle pin status of a post |
+
+## 10) Comment APIs
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | /api/v1/posts/:postId/comments | Public | List comments for a post (sorted by createdAt asc) |
+| POST | /api/v1/posts/:postId/comments | Authenticated | Create a comment on a post |
+| DELETE | /api/v1/posts/:postId/comments/:commentId | Authenticated | Delete a comment (own comment or admin) |
 
 ## Notes
 
