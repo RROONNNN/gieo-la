@@ -9,6 +9,7 @@ const {
   updatePost,
   deletePost,
   updatePostStatus,
+  toggleLikePost,
 } = require('../controllers/postController');
 
 const router = Router();
@@ -22,5 +23,6 @@ router.post('/', protect, createPost);
 router.patch('/:id', protect, updatePost);
 router.delete('/:id', protect, deletePost);
 router.patch('/:id/status', protect, updatePostStatus);
+router.post('/:id/like', protect, toggleLikePost);
 
 module.exports = router;

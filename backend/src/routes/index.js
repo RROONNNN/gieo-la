@@ -10,6 +10,8 @@ const uploadRouter          = require('./uploadRoutes');
 const postRouter            = require('./postRoutes');
 const applicationRouter     = require('./applicationRoutes');
 const commentRouter         = require('./commentRoutes');
+const leaderboardRouter     = require('./leaderboardRoutes');
+const wishlistRouter        = require('./wishlistRoutes');
 
 const router = Router();
 
@@ -28,5 +30,7 @@ router.use('/upload', uploadRouter);
 router.use('/posts', postRouter);
 router.use('/applications', applicationRouter);
 router.use('/posts/:postId/comments', commentRouter);
+router.use('/leaderboard', leaderboardRouter);
+router.use('/wishlist', wishlistRouter);
 
 module.exports = router;

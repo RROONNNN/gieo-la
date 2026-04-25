@@ -37,23 +37,23 @@ async function request<T>(
     ...options,
     headers,
   });
+  const data: ApiResponse<T> = await response.json();
 
   if (response.status === 401 && typeof window !== "undefined") {
     localStorage.removeItem(TOKEN_KEY);
     document.cookie = `${TOKEN_KEY}=; path=/; Max-Age=0`;
     window.location.href = "/login";
-    throw new ApiError(401, "Phiên đăng nhập đã hết hạn");
+    throw new ApiError(401, data.message || "Phiên đăng nhập đã hết hạn");
   }
 
   if (response.status === 403 && typeof window !== "undefined") {
     localStorage.removeItem(TOKEN_KEY);
     document.cookie = `${TOKEN_KEY}=; path=/; Max-Age=0`;
     window.dispatchEvent(new Event("auth:logout"));
-    window.location.href = "/login?reason=locked";
-    throw new ApiError(403, "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.");
+    let message = data.message || "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.";
+    window.location.href = "/login?reason=" + message;
+    throw new ApiError(403, message);
   }
-
-  const data: ApiResponse<T> = await response.json();
 
   if (!response.ok) {
     throw new ApiError(

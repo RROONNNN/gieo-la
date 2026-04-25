@@ -96,6 +96,9 @@
 | description | String | trim, max 2000 chars |
 | status | String | enum: available / in_transaction / traded / completed, default: available |
 | isPinned | Boolean | default: false |
+| completedAt | Date | default: null (set by admin when completing post) |
+| likes | [ObjectId] | ref: User, default: [] |
+| likesCount | Number | default: 0 (denormalized) |
 | selectedApplicant | ObjectId | ref: User, default: null |
 | location.city | String | default: null |
 | location.district | String | default: null |
@@ -105,10 +108,38 @@
 **Indexes:**
 - Text index on `title + description`
 - `status + category + createdAt` (compound)
+- `status + completedAt` (desc)
 - `author + createdAt`
 - `isPinned + createdAt`
 
 **Relations:** author → User, selectedApplicant → User
+
+---
+
+## Wishlist (`wishlists`)
+
+| Field | Type | Constraints |
+|---|---|---|
+| _id | ObjectId | auto |
+| author | ObjectId | required, ref: User |
+| title | String | required, trim, max 200 |
+| images | [String] | 1–5 URLs |
+| description | String | trim, max 2000, default: null |
+| category | String | required, enum: do_nam / do_nu / do_tre_em / phu_kien |
+| quantity | Number | required, min: 1 |
+| status | String | enum: open / fulfilled, default: open |
+| isPinned | Boolean | default: false |
+| likes | [ObjectId] | ref: User, default: [] |
+| likesCount | Number | default: 0 (denormalized) |
+| createdAt | Date | auto (timestamps) |
+| updatedAt | Date | auto (timestamps) |
+
+**Indexes:**
+- `author + createdAt` (desc)
+- `isPinned + createdAt` (desc)
+- `category + status`
+
+**Relations:** author → User
 
 ---
 

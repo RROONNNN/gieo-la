@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { MapPin, Share2, Bookmark, ChevronRight } from "lucide-react";
+import { MapPin, Share2, ChevronRight } from "lucide-react";
 import { fetchPost } from "@/lib/api/posts";
 import { fetchApplications } from "@/lib/api/applications";
 import { fetchComments } from "@/lib/api/comments";
@@ -11,6 +11,7 @@ import { PostStats } from "@/components/posts/PostStats";
 import { ApplicationPanel } from "@/components/posts/ApplicationPanel";
 import { PostOwnerActions } from "@/components/posts/PostOwnerActions";
 import { CommentSection } from "@/components/posts/CommentSection";
+import { PostLikeButton } from "@/components/posts/PostLikeButton";
 import { formatRelativeTimeVN } from "@/lib/utils";
 import { CATEGORY_LABEL, STATUS_LABEL, STATUS_VARIANT } from "@/lib/postLabels";
 import { getCurrentUserFromCookie } from "@/lib/auth/server";
@@ -77,9 +78,12 @@ export default async function PostDetailPage({ params }: PageProps) {
           <button className="flex size-10 items-center justify-center rounded-full border border-[var(--border-green)] text-muted-foreground hover:text-brand-dark transition-colors">
             <Share2 className="size-5" />
           </button>
-          <button className="flex size-10 items-center justify-center rounded-full border border-[var(--border-green)] text-muted-foreground hover:text-brand-dark transition-colors">
-            <Bookmark className="size-5" />
-          </button>
+          <PostLikeButton
+            postId={post._id}
+            initialLikes={post.likesCount ?? 0}
+            initialLiked={viewer !== null && (post.likes ?? []).includes(viewer._id)}
+            isAuthenticated={viewer !== null}
+          />
         </div>
       </div>
 

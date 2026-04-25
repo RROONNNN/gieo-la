@@ -6,14 +6,15 @@ import { User, LogOut, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { UserRole } from "@/types/enums";
 
 const NAV_LINKS = [
   { href: "/", label: "Trang chủ" },
   { href: "/posts", label: "Diễn đàn" },
-  { href: "/wishlist", label: "Wishlist" },
   { href: "/news", label: "Tin tức" },
   { href: "/leaderboard", label: "Bảng xếp hạng" },
 ];
+
 
 export function Navbar() {
   const pathname = usePathname();
@@ -38,6 +39,17 @@ export function Navbar() {
     router.push("/");
   }
 
+   function _getNavLinks(role?: UserRole) {
+    if (!role || role === UserRole.ADMIN || role === UserRole.NGO) {
+      return [
+        ...NAV_LINKS,
+  { href: "/wishlist", label: "Wishlist" },
+
+      ];
+    }
+    return NAV_LINKS;
+  }
+  
   return (
     <nav className="sticky top-0 z-50 bg-brand-dark">
       <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-6 lg:px-[70px]">
@@ -51,7 +63,7 @@ export function Navbar() {
 
         {/* Nav links */}
         <div className="hidden items-center gap-8 md:flex">
-          {NAV_LINKS.map((link) => {
+          {_getNavLinks(user?.role).map((link) => {
             const isActive =
               link.href === "/"
                 ? pathname === "/"
