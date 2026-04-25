@@ -113,9 +113,8 @@ Bước 5 — Xác nhận hoàn thành
 
 V. HỆ THỐNG CHAT REAL-TIME
 ----------------------------
-- Mô hình: Chat 1-1 riêng tư giữa hai account với nhau (như inbox Messenger). Cuộc hội thoại (Conversation) chỉ gắn với cặp người dùng, không gắn với bài đăng hay đơn đăng ký cụ thể nào.
-- Chỉ mở chat sau khi người tặng đã chọn người nhận (tránh spam). Hệ thống tự động khởi tạo cuộc hội thoại giữa người tặng và người được chọn nếu chưa tồn tại.
-- Sau khi cuộc hội thoại được tạo, hai bên có thể tiếp tục nhắn tin với nhau trong mọi bối cảnh (không chỉ riêng giao dịch đó).
+- Mô hình: Chat 1-1 riêng tư giữa hai account với nhau (như inbox Messenger).
+- Khi người đăng bài chọn người có hoàn cảnh khó khăn để tặng quà. Hệ thống tự động tạo 1 message từ người đăng bài cho đi đến người được nhận 1 tin nhắn để thông báo bên người được nhận biết là bạn đã được chọn nhận sự hỗ trợ
 - Người dùng có thể xem profile và lịch sử bài đăng của nhau từ trong cửa sổ chat
 
 

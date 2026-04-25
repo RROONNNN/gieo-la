@@ -71,3 +71,9 @@ export function updatePostStatus(id: string, status: PostStatus) {
     { status },
   );
 }
+
+export function toggleLikePost(id: string) {
+  return apiClient.post<{ liked: boolean; likesCount: number }>(
+    ENDPOINTS.POSTS.LIKE(id),
+  );
+}

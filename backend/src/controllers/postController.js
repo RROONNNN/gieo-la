@@ -246,6 +246,7 @@ const adminCompletePost = async (req, res) => {
   }
 
   post.status = POST_STATUSES.COMPLETED;
+  post.completedAt = new Date();
   await post.save();
 
   // Increment the author's completedDonations counter
@@ -371,6 +372,33 @@ const adminListPosts = async (req, res) => {
   });
 };
 
+/**
+ * POST /api/v1/posts/:id/like
+ * Toggle like on a post. Requires authentication.
+ */
+const toggleLikePost = async (req, res) => {
+  const post = await Post.findById(req.params.id);
+  if (!post) {
+    return res.status(404).json({ success: false, message: 'Không tìm thấy bài đăng' });
+  }
+
+  const userId = req.user._id.toString();
+  const index = post.likes.findIndex((id) => id.toString() === userId);
+
+  if (index === -1) {
+    post.likes.push(req.user._id);
+  } else {
+    post.likes.splice(index, 1);
+  }
+  post.likesCount = post.likes.length;
+  await post.save();
+
+  return res.json({
+    success: true,
+    data: { liked: index === -1, likesCount: post.likesCount },
+  });
+};
+
 module.exports = {
   listPosts,
   getPost,
@@ -382,4 +410,5 @@ module.exports = {
   adminDeletePost,
   adminTogglePin,
   adminListPosts,
+  toggleLikePost,
 };

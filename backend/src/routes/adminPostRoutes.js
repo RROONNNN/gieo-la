@@ -9,6 +9,7 @@ const {
   adminDeletePost,
   adminTogglePin,
 } = require('../controllers/postController');
+const { adminToggleWishlistPin } = require('../controllers/wishlistController');
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.get('/', adminListPosts);
 router.patch('/:id/complete', adminCompletePost);
 router.patch('/:id/pin', adminTogglePin);
 router.delete('/:id', adminDeletePost);
+router.patch('/wishlist/:id/pin', adminToggleWishlistPin);
 
 module.exports = router;

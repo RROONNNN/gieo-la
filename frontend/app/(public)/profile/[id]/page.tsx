@@ -5,6 +5,7 @@ import { getUserProfile } from "@/lib/api/users";
 import { getCurrentUserFromCookie } from "@/lib/auth/server";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
+import { BadgeChip } from "@/components/ui/BadgeChip";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { formatDateVN } from "@/lib/utils";
 
@@ -12,9 +13,15 @@ interface ProfilePageProps {
   params: Promise<{ id: string }>;
 }
 
-const ROLE_BADGE_MAP: Record<string, { label: string; variant: "role-ngo" | "role-individual" | "role-member" }> = {
+const ROLE_BADGE_MAP: Record<
+  string,
+  { label: string; variant: "role-ngo" | "role-individual" | "role-member" }
+> = {
   ngo: { label: "Tổ chức thiện nguyện — Đã xác thực", variant: "role-ngo" },
-  individual: { label: "Hoàn cảnh khó khăn — Đã xác thực", variant: "role-individual" },
+  individual: {
+    label: "Hoàn cảnh khó khăn — Đã xác thực",
+    variant: "role-individual",
+  },
   member: { label: "Thành viên", variant: "role-member" },
   admin: { label: "Quản trị viên", variant: "role-member" },
 };
@@ -38,22 +45,31 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     <div className="py-10">
       {/* ─── Header ─── */}
       <div className="mb-10 flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
-        <Avatar
-          src={profileUser.avatar}
-          alt={profileUser.name}
-          size="xl"
-        />
+        <Avatar src={profileUser.avatar} alt={profileUser.name} size="xl" />
         <div className="flex-1 text-center sm:text-left">
           <h1 className="font-heading text-3xl font-bold text-brand-darker">
             {profileUser.name}
             {profileUser.role === "ngo" && (
-              <span className="ml-2 text-blue-500" title="NGO Xác thực">✓</span>
+              <span className="ml-2 text-blue-500" title="NGO Xác thực">
+                ✓
+              </span>
             )}
           </h1>
 
           {profileUser.verificationStatus === "verified" && (
             <Badge variant={roleBadge.variant} className="mt-2">
               {roleBadge.label}
+            </Badge>
+          )}
+
+          {profileUser.badge && profileUser.badge !== "none" && (
+            <div className="mt-2">
+              <BadgeChip badge={profileUser.badge} />
+            </div>
+          )}
+          {profileUser.verificationStatus === "unverified" && (
+            <Badge variant="error" className="mt-2">
+              Chưa xác thực
             </Badge>
           )}
 
@@ -92,14 +108,19 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             <div className="flex-1">
               {profileUser.verificationStatus === "pending" ? (
                 <>
-                  <p className="font-medium text-brand-darker">Hồ sơ đang chờ xét duyệt</p>
+                  <p className="font-medium text-brand-darker">
+                    Hồ sơ đang chờ xét duyệt
+                  </p>
                   <p className="mt-0.5 text-sm text-muted-foreground">
-                    Admin đang xem xét hồ sơ xác thực của bạn. Bạn sẽ được thông báo khi có kết quả.
+                    Admin đang xem xét hồ sơ xác thực của bạn. Bạn sẽ được thông
+                    báo khi có kết quả.
                   </p>
                 </>
               ) : (
                 <>
-                  <p className="font-medium text-brand-darker">Xác thực tài khoản của bạn</p>
+                  <p className="font-medium text-brand-darker">
+                    Xác thực tài khoản của bạn
+                  </p>
                   <p className="mt-0.5 text-sm text-muted-foreground">
                     {profileUser.role === "ngo"
                       ? "Nộp hồ sơ để được gắn nhãn NGO xác thực, tăng độ tin cậy với cộng đồng."
@@ -160,7 +181,9 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           <SectionHeading>Thông tin tổ chức</SectionHeading>
           <div className="mt-6 rounded-[15px] border border-[var(--border-green)] bg-white p-6 space-y-3">
             <p className="text-sm">
-              <span className="font-medium text-brand-darker">Tên tổ chức:</span>{" "}
+              <span className="font-medium text-brand-darker">
+                Tên tổ chức:
+              </span>{" "}
               {profileUser.ngoProfile.organizationName || "—"}
             </p>
             {profileUser.ngoProfile.website && (
@@ -183,7 +206,9 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       {/* ─── Placeholder sections for history / feedback ─── */}
       <div className="mb-10">
         <SectionHeading>
-          {profileUser.role === "individual" ? "Lịch sử nhận đồ" : "Lịch sử tặng đồ"}
+          {profileUser.role === "individual"
+            ? "Lịch sử nhận đồ"
+            : "Lịch sử tặng đồ"}
         </SectionHeading>
         <div className="mt-6 rounded-[15px] border border-[var(--border-green)] bg-white p-8 text-center text-sm text-muted-foreground">
           Chưa có dữ liệu

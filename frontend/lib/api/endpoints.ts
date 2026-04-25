@@ -27,6 +27,17 @@ export const ENDPOINTS = {
     UPDATE: (id: string) => `${API_BASE}/posts/${id}`,
     DELETE: (id: string) => `${API_BASE}/posts/${id}`,
     UPDATE_STATUS: (id: string) => `${API_BASE}/posts/${id}/status`,
+    LIKE: (id: string) => `${API_BASE}/posts/${id}/like`,
+  },
+  LEADERBOARD: {
+    MONTHLY: `${API_BASE}/leaderboard`,
+  },
+  WISHLIST: {
+    LIST: `${API_BASE}/wishlist`,
+    DETAIL: (id: string) => `${API_BASE}/wishlist/${id}`,
+    CREATE: `${API_BASE}/wishlist`,
+    DELETE: (id: string) => `${API_BASE}/wishlist/${id}`,
+    LIKE: (id: string) => `${API_BASE}/wishlist/${id}/like`,
   },
   APPLICATIONS: {
     LIST: (postId: string) => `${API_BASE}/applications/${postId}`,
