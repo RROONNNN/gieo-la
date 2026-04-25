@@ -1,5 +1,6 @@
 'use strict';
 
+const removeAccents = require('remove-accents');
 const Post = require('../models/Post');
 const AuditLog = require('../models/AuditLog');
 const { POST_STATUSES } = require('../constants/postEnums');
@@ -47,9 +48,15 @@ const listPosts = async (req, res) => {
   } else {
     filter.status = POST_STATUSES.AVAILABLE;
   }
-
   if (search) {
-    filter.$text = { $search: search };
+    const normalized = removeAccents(search);
+    filter.$or = [
+      { title: { $regex: normalized, $options: 'i' } },
+      { title: { $regex: search, $options: 'i' } },
+       {
+        author: { $regex: normalized, $options: 'i' } },
+       
+    ];
   }
 
   const skip = (page - 1) * limit;
@@ -239,6 +246,7 @@ const adminCompletePost = async (req, res) => {
   }
 
   post.status = POST_STATUSES.COMPLETED;
+  post.completedAt = new Date();
   await post.save();
 
   // Increment the author's completedDonations counter
@@ -310,18 +318,48 @@ const adminListPosts = async (req, res) => {
     });
   }
 
-  const { category, status, search, page, limit } = parsed.data;
+  const { category, status, search, authorSearch, dateFrom, dateTo, page, limit } = parsed.data;
   const filter = {};
 
   if (category) filter.category = category;
   if (status) filter.status = status;
-  if (search) filter.$text = { $search: search };
+
+  if (search || authorSearch) {
+    const User = require('../models/User');
+    const orClauses = [];
+
+    if (search) {
+      const normalizedSearch = removeAccents(search);
+      orClauses.push({ title: { $regex: normalizedSearch, $options: 'i' } });
+    }
+    if (authorSearch || search) {
+      const userQuery = authorSearch || search;
+      const normalizedUserQuery = removeAccents(userQuery);
+      const matchingUsers = await User.find({
+        $or: [
+          { name: { $regex: normalizedUserQuery, $options: 'i' } },
+          { email: { $regex: userQuery, $options: 'i' } },
+        ],
+      }).select('_id');
+      if (matchingUsers.length > 0) {
+        orClauses.push({ author: { $in: matchingUsers.map((u) => u._id) } });
+      }
+    }
+
+    if (orClauses.length > 0) filter.$or = orClauses;
+  }
+
+  if (dateFrom || dateTo) {
+    filter.createdAt = {};
+    if (dateFrom) filter.createdAt.$gte = new Date(dateFrom);
+    if (dateTo) filter.createdAt.$lte = new Date(`${dateTo}T23:59:59.999Z`);
+  }
 
   const skip = (page - 1) * limit;
 
   const [posts, total] = await Promise.all([
     Post.find(filter)
-      .populate('author', 'name email role verificationStatus')
+      .populate('author', 'name email avatar role verificationStatus')
       .sort({ isPinned: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit),
@@ -331,6 +369,33 @@ const adminListPosts = async (req, res) => {
   return res.json({
     success: true,
     data: { posts, total, page, limit },
+  });
+};
+
+/**
+ * POST /api/v1/posts/:id/like
+ * Toggle like on a post. Requires authentication.
+ */
+const toggleLikePost = async (req, res) => {
+  const post = await Post.findById(req.params.id);
+  if (!post) {
+    return res.status(404).json({ success: false, message: 'Không tìm thấy bài đăng' });
+  }
+
+  const userId = req.user._id.toString();
+  const index = post.likes.findIndex((id) => id.toString() === userId);
+
+  if (index === -1) {
+    post.likes.push(req.user._id);
+  } else {
+    post.likes.splice(index, 1);
+  }
+  post.likesCount = post.likes.length;
+  await post.save();
+
+  return res.json({
+    success: true,
+    data: { liked: index === -1, likesCount: post.likesCount },
   });
 };
 
@@ -345,4 +410,5 @@ module.exports = {
   adminDeletePost,
   adminTogglePin,
   adminListPosts,
+  toggleLikePost,
 };

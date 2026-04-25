@@ -1,6 +1,6 @@
 'use strict';
 
-const { upload } = require('../config/cloudinary');
+const { upload, uploadDocument } = require('../config/cloudinary');
 
 /**
  * POST /api/v1/upload/image
@@ -25,4 +25,26 @@ const uploadImage = (req, res) => {
   });
 };
 
-module.exports = { upload, uploadImage };
+/**
+ * POST /api/v1/upload/file
+ * Authenticated user uploads a single document file (image/PDF/DOC/DOCX).
+ * Returns the Cloudinary URL.
+ */
+const uploadFile = (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({
+      success: false,
+      message: 'Không tìm thấy file. Vui lòng chọn file để tải lên.',
+    });
+  }
+
+  const url = req.file.path;
+
+  return res.status(201).json({
+    success: true,
+    message: 'Tải file lên thành công',
+    data: { url },
+  });
+};
+
+module.exports = { upload, uploadImage, uploadDocument, uploadFile };

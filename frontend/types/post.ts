@@ -24,6 +24,9 @@ export interface Post {
   isPinned: boolean;
   selectedApplicant: UserRef | string | null;
   location: PostLocation;
+  likes: string[];
+  likesCount: number;
+  completedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }

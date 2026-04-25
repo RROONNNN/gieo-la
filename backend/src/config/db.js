@@ -5,12 +5,15 @@ const connectDB = async () => {
   const options = {
     maxPoolSize: 10,
     minPoolSize: 2,
-    serverSelectionTimeoutMS: 5000,
+    serverSelectionTimeoutMS: 10000,
     socketTimeoutMS: 45000,
     maxIdleTimeMS: 30000,
     retryWrites: true,
     appName: 'gieo-la-backend',
     autoIndex: env.NODE_ENV !== 'production',
+    // Node.js 25 / OpenSSL 3.x compatibility with MongoDB Atlas
+    tls: true,
+    tlsAllowInvalidCertificates: env.NODE_ENV !== 'production',
   };
 
   try {

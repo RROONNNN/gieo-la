@@ -37,7 +37,7 @@
 | PATCH | /api/v1/admin/users/verification-requests/:id/approve | Admin | Approve verification request |
 | PATCH | /api/v1/admin/users/verification-requests/:id/reject | Admin | Reject verification request |
 | PATCH | /api/v1/admin/users/:id/ngo-status | Admin | Grant or revoke NGO tích xanh badge |
-| PATCH | /api/v1/admin/users/:id/individual-status | Admin | Revoke Individual tích xanh badge |
+| PATCH | /api/v1/admin/users/:id/individual-status | Admin |Grant or Revoke Individual tích xanh badge |
 | PATCH | /api/v1/admin/users/:id/account-status | Admin | Update account status for a user |
 
 ## 5) User Profile APIs
@@ -62,6 +62,7 @@
 | PATCH | /api/v1/posts/:id | Authenticated | Update own post (only if status = available) |
 | DELETE | /api/v1/posts/:id | Authenticated | Delete own post |
 | PATCH | /api/v1/posts/:id/status | Authenticated | Change post status (available → in_transaction → traded) |
+| POST | /api/v1/posts/:id/like | Authenticated | Toggle like on a post (returns liked, likesCount) |
 
 ## 8) Application APIs
 
@@ -80,6 +81,31 @@
 | PATCH | /api/v1/admin/posts/:id/complete | Admin | Mark post as completed (traded → completed; increments completedDonations) |
 | DELETE | /api/v1/admin/posts/:id | Admin | Admin-delete a post |
 | PATCH | /api/v1/admin/posts/:id/toggle-pin | Admin | Toggle pin status of a post |
+| PATCH | /api/v1/admin/posts/wishlist/:id/pin | Admin | Toggle pin status of a wishlist post |
+
+## 11) Leaderboard APIs
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | /api/v1/leaderboard | Public | Get top 10 donors for a month (optional ?year=&month=) |
+
+## 12) Wishlist APIs
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | /api/v1/wishlist | Public | List wishlist posts (filter: category, status, pagination) |
+| GET | /api/v1/wishlist/:id | Public | Get single wishlist post detail |
+| POST | /api/v1/wishlist | Authenticated (NGO+ngo_verified) | Create a new wishlist post |
+| DELETE | /api/v1/wishlist/:id | Authenticated (author or admin) | Delete a wishlist post |
+| POST | /api/v1/wishlist/:id/like | Authenticated | Toggle like on a wishlist post (returns liked, likesCount) |
+
+## 10) Comment APIs
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | /api/v1/posts/:postId/comments | Public | List comments for a post (sorted by createdAt asc) |
+| POST | /api/v1/posts/:postId/comments | Authenticated | Create a comment on a post |
+| DELETE | /api/v1/posts/:postId/comments/:commentId | Authenticated | Delete a comment (own comment or admin) |
 
 ## Notes
 

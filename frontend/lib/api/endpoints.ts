@@ -18,6 +18,7 @@ export const ENDPOINTS = {
   },
   UPLOAD: {
     IMAGE: `${API_BASE}/upload/image`,
+    FILE: `${API_BASE}/upload/file`,
   },
   POSTS: {
     LIST: `${API_BASE}/posts`,
@@ -26,6 +27,17 @@ export const ENDPOINTS = {
     UPDATE: (id: string) => `${API_BASE}/posts/${id}`,
     DELETE: (id: string) => `${API_BASE}/posts/${id}`,
     UPDATE_STATUS: (id: string) => `${API_BASE}/posts/${id}/status`,
+    LIKE: (id: string) => `${API_BASE}/posts/${id}/like`,
+  },
+  LEADERBOARD: {
+    MONTHLY: `${API_BASE}/leaderboard`,
+  },
+  WISHLIST: {
+    LIST: `${API_BASE}/wishlist`,
+    DETAIL: (id: string) => `${API_BASE}/wishlist/${id}`,
+    CREATE: `${API_BASE}/wishlist`,
+    DELETE: (id: string) => `${API_BASE}/wishlist/${id}`,
+    LIKE: (id: string) => `${API_BASE}/wishlist/${id}/like`,
   },
   APPLICATIONS: {
     LIST: (postId: string) => `${API_BASE}/applications/${postId}`,
@@ -38,6 +50,12 @@ export const ENDPOINTS = {
     COMPLETE: (id: string) => `${API_BASE}/admin/posts/${id}/complete`,
     PIN: (id: string) => `${API_BASE}/admin/posts/${id}/pin`,
     DELETE: (id: string) => `${API_BASE}/admin/posts/${id}`,
+  },
+  COMMENTS: {
+    LIST: (postId: string) => `${API_BASE}/posts/${postId}/comments`,
+    CREATE: (postId: string) => `${API_BASE}/posts/${postId}/comments`,
+    DELETE: (postId: string, commentId: string) =>
+      `${API_BASE}/posts/${postId}/comments/${commentId}`,
   },
   HEALTH: `${API_BASE}/health`,
   USERS: {

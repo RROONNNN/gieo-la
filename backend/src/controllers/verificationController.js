@@ -1,5 +1,6 @@
 'use strict';
 
+const removeAccents = require('remove-accents');
 const VerificationRequest = require('../models/VerificationRequest');
 const User = require('../models/User');
 const AuditLog = require('../models/AuditLog');
@@ -148,7 +149,7 @@ const approveVerification = async (req, res) => {
 
   // Promote the user: role becomes requestType, mark verified
   await User.findByIdAndUpdate(request.userId, {
-    role: request.requestType, // 'ngo' | 'individual'
+    // role: request.requestType, // 'ngo' | 'individual'
     verificationStatus: 'verified',
   });
 
@@ -243,8 +244,6 @@ const updateNgoStatus = async (req, res) => {
     user.role = 'ngo';
     user.verificationStatus = 'verified';
   } else {
-    // revoke — downgrade back to basic member
-    user.role = 'member';
     user.verificationStatus = 'unverified';
   }
   await user.save();
@@ -325,7 +324,7 @@ const updateAccountStatus = async (req, res) => {
 
 /**
  * PATCH /api/v1/admin/users/:id/individual-status
- * Admin revokes the Individual tích xanh badge from a user account.
+ * Admin revokes or grants the Individual tích xanh badge from a user account.
  * Individual role is only granted via the verification-request approval flow,
  * so this endpoint only supports action = "revoke".
  */
@@ -339,7 +338,7 @@ const updateIndividualStatus = async (req, res) => {
     });
   }
 
-  const { reason } = parsed.data;
+  const { reason, action } = parsed.data;
 
   const user = await User.findById(req.params.id);
   if (!user) {
@@ -353,22 +352,21 @@ const updateIndividualStatus = async (req, res) => {
     });
   }
 
-  user.role = 'member';
-  user.verificationStatus = 'unverified';
+    user.verificationStatus = action === 'grant' ? 'verified' : 'unverified';
   await user.save();
 
   await logAudit(
     req.user._id,
     'User',
     user._id,
-    'individual.badge_revoke',
+ action === 'grant' ? 'individual.badge_grant' : 'individual.badge_revoke',
     { reason: reason || null },
     req
   );
 
   return res.json({
     success: true,
-    message: 'Đã thu hồi xác minh Individual',
+    message: action === 'grant' ? 'Đã cấp xác minh Individual' : 'Đã thu hồi xác minh Individual',
     data: {
       user: {
         _id: user._id,
@@ -421,8 +419,21 @@ const listUsers = async (req, res) => {
     });
   }
 
-  const { role, page, limit } = parsed.data;
-  const filter = role ? { role } : {};
+  const { role, search, verificationStatus, accountStatus, page, limit } = parsed.data;
+  const filter = {};
+
+  if (role) filter.role = role;
+  if (verificationStatus) filter.verificationStatus = verificationStatus;
+  if (accountStatus) filter.accountStatus = accountStatus;
+  if (search) {
+    const normalizedSearch = removeAccents(search);
+    filter.$or = [
+      { name: { $regex: normalizedSearch, $options: 'i' } },
+      { name: { $regex: search, $options: 'i' } },
+      { email: { $regex: search, $options: 'i' } },
+    ];
+  }
+
   const skip = (page - 1) * limit;
 
   const [users, total] = await Promise.all([

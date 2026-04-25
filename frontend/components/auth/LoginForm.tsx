@@ -21,7 +21,7 @@ export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isLocked = searchParams.get("reason") === "locked";
-
+  const reason = searchParams.get("reason");
   const [values, setValues] = useState<LoginFields>({ email: "", password: "" });
   const [errors, setErrors] = useState<FieldErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
@@ -62,9 +62,13 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-      {isLocked && (
+      {isLocked ? (
         <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 font-medium">
           Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.
+        </p>
+      ) :reason && reason.length > 0 && (
+        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 font-medium">
+          {reason}
         </p>
       )}
       {serverError && (

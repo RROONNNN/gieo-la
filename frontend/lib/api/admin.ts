@@ -46,3 +46,18 @@ export function revokeIndividualBadge(userId: string, reason?: string) {
     { action: "revoke", reason },
   );
 }
+
+// ─── Account status ───────────────────────────────────────────────────────────
+
+export function updateAccountStatus(userId: string, status: string) {
+  return apiClient.patch<{ user: AdminUserSummary }>(
+    `/api/v1/admin/users/${userId}/account-status`,
+    { status },
+  );
+}
+export function grantIndividualBadge(userId: string, reason?: string) {
+  return apiClient.patch<BadgeActionResponse>(
+    `/api/v1/admin/users/${userId}/individual-status`,
+    { action: "grant", reason },
+  );
+}

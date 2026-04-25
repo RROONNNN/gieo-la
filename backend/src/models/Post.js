@@ -6,7 +6,6 @@ const {
   POST_CONDITION_VALUES,
   POST_STATUS_VALUES,
   POST_STATUSES,
-  POST_CATEGORIES,
 } = require('../constants/postEnums');
 
 const postSchema = new mongoose.Schema(
@@ -72,6 +71,22 @@ const postSchema = new mongoose.Schema(
       default: false,
     },
 
+    // Timestamp set by admin when post is marked 'completed' (for leaderboard)
+    completedAt: {
+      type: Date,
+      default: null,
+    },
+
+    // Likes
+    likes: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+      default: [],
+    },
+    likesCount: {
+      type: Number,
+      default: 0,
+    },
+
     // Chosen recipient (set when author selects an applicant)
     selectedApplicant: {
       type: mongoose.Schema.Types.ObjectId,
@@ -94,6 +109,7 @@ const postSchema = new mongoose.Schema(
 postSchema.index({ title: 'text', description: 'text' });
 // Filtering indexes
 postSchema.index({ status: 1, category: 1, createdAt: -1 });
+postSchema.index({ status: 1, completedAt: -1 });
 postSchema.index({ author: 1, createdAt: -1 });
 postSchema.index({ isPinned: -1, createdAt: -1 });
 
