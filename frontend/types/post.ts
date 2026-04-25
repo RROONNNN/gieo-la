@@ -23,6 +23,8 @@ export interface Post {
   status: PostStatus;
   isPinned: boolean;
   selectedApplicant: UserRef | string | null;
+  receiverConfirmed: boolean;
+  receiverConfirmedAt: string | null;
   location: PostLocation;
   likes: string[];
   likesCount: number;

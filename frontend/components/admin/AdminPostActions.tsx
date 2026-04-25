@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Pin, PinOff, CheckCircle2, Trash2 } from "lucide-react";
+import { Pin, PinOff, CheckCircle2, Trash2, Clock } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { useRouter } from "next/navigation";
@@ -11,12 +11,14 @@ interface AdminPostActionsProps {
   postId: string;
   isPinned: boolean;
   status: string;
+  receiverConfirmed?: boolean;
 }
 
 export function AdminPostActions({
   postId,
   isPinned,
   status,
+  receiverConfirmed = false,
 }: AdminPostActionsProps) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
@@ -57,9 +59,17 @@ export function AdminPostActions({
           }
           disabled={loading !== null}
           className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-green-50 hover:text-green-600 transition-colors disabled:opacity-40"
-          title="Đánh dấu hoàn thành"
+          title={
+            status === "traded" && !receiverConfirmed
+              ? "Chờ người nhận xác nhận trước"
+              : "Đánh dấu hoàn thành"
+          }
         >
-          <CheckCircle2 className="size-4" />
+          {status === "traded" && !receiverConfirmed ? (
+            <Clock className="size-4 text-amber-400" />
+          ) : (
+            <CheckCircle2 className="size-4" />
+          )}
         </button>
       )}
 

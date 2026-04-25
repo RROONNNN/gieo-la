@@ -6,9 +6,10 @@ import { Avatar } from "@/components/ui/Avatar";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { AdminPostFilters } from "@/components/admin/AdminPostFilters";
 import { AdminPostActions } from "@/components/admin/AdminPostActions";
+import { AdminPostStatusSelect } from "@/components/admin/AdminPostStatusSelect";
 import { listAdminPostsServer } from "@/lib/api/adminPosts.server";
 import { formatDateVN } from "@/lib/utils";
-import { CATEGORY_LABEL, STATUS_LABEL, STATUS_VARIANT } from "@/lib/postLabels";
+import { CATEGORY_LABEL } from "@/lib/postLabels";
 import type { Post } from "@/types/post";
 
 interface AdminPostsPageProps {
@@ -162,9 +163,10 @@ export default async function AdminPostsPage({
 
                     {/* Status */}
                     <td className="hidden px-4 py-3 lg:table-cell">
-                      <Badge variant={STATUS_VARIANT[post.status] ?? "default"}>
-                        {STATUS_LABEL[post.status] ?? post.status}
-                      </Badge>
+                      <AdminPostStatusSelect
+                        postId={post._id}
+                        currentStatus={post.status}
+                      />
                     </td>
 
                     {/* Date */}
@@ -187,6 +189,7 @@ export default async function AdminPostsPage({
                           postId={post._id}
                           isPinned={post.isPinned}
                           status={post.status}
+                          receiverConfirmed={post.receiverConfirmed}
                         />
                       </div>
                     </td>

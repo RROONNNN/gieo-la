@@ -59,4 +59,34 @@ const restrictTo = (...roles) =>
     next();
   };
 
-module.exports = { protect, restrictTo };
+/**
+ * optionalProtect — same as protect but does NOT return 401 when no token is present.
+ * Attaches req.user when a valid token is provided; silently skips when absent.
+ */
+const optionalProtect = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return next();
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  let decoded;
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch {
+    // Invalid token — treat as unauthenticated
+    return next();
+  }
+
+  const user = await User.findById(decoded.id);
+  if (user &&
+    user.accountStatus !== ACCOUNT_STATUSES.SUSPENDED &&
+    user.accountStatus !== ACCOUNT_STATUSES.BANNED
+  ) {
+    req.user = user;
+  }
+  next();
+};
+
+module.exports = { protect, restrictTo, optionalProtect };

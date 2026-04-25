@@ -8,6 +8,7 @@ const {
   adminCompletePost,
   adminDeletePost,
   adminTogglePin,
+  adminUpdatePostStatus,
 } = require('../controllers/postController');
 const { adminToggleWishlistPin } = require('../controllers/wishlistController');
 
@@ -16,6 +17,7 @@ const router = Router();
 router.use(protect, restrictTo(USER_ROLES.ADMIN));
 
 router.get('/', adminListPosts);
+router.patch('/:id/status', adminUpdatePostStatus);
 router.patch('/:id/complete', adminCompletePost);
 router.patch('/:id/pin', adminTogglePin);
 router.delete('/:id', adminDeletePost);

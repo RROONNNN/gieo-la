@@ -20,9 +20,16 @@ const STATUSES = [
 interface PostFiltersProps {
   currentCategory?: string;
   currentSearch?: string;
+  isAuthenticated?: boolean;
+  isMine?: boolean;
 }
 
-export function PostFilters({ currentCategory, currentSearch }: PostFiltersProps) {
+export function PostFilters({
+  currentCategory,
+  currentSearch,
+  isAuthenticated,
+  isMine,
+}: PostFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -37,11 +44,40 @@ export function PostFilters({ currentCategory, currentSearch }: PostFiltersProps
     router.push(`/posts?${params.toString()}`);
   };
 
+  const toggleMine = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (isMine) {
+      params.delete("mine");
+    } else {
+      params.set("mine", "true");
+      params.delete("status");
+    }
+    params.delete("page");
+    router.push(`/posts?${params.toString()}`);
+  };
+
   const activeCategory = searchParams.get("category");
   const activeStatus = searchParams.get("status");
 
   return (
     <div className="space-y-6">
+      {/* Bài đăng của tôi */}
+      {isAuthenticated && (
+        <div>
+          <button
+            onClick={toggleMine}
+            className={cn(
+              "w-full rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
+              isMine
+                ? "border-brand-dark bg-brand-dark text-white"
+                : "border-[var(--border-green)] bg-white text-brand-darker hover:bg-brand-light/30",
+            )}
+          >
+            {isMine ? "✓ Bài đăng của tôi" : "Bài đăng của tôi"}
+          </button>
+        </div>
+      )}
+
       {/* Danh mục */}
       <div>
         <h3 className="mb-3 font-heading text-lg font-semibold text-brand-darker">
@@ -68,29 +104,31 @@ export function PostFilters({ currentCategory, currentSearch }: PostFiltersProps
       </div>
 
       {/* Trạng thái */}
-      <div>
-        <h3 className="mb-3 font-heading text-lg font-semibold text-brand-darker">
-          Trạng thái
-        </h3>
-        <div className="space-y-2">
-          {STATUSES.map((st) => (
-            <label key={st.key} className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={activeStatus === st.key}
-                onChange={() =>
-                  updateFilter(
-                    "status",
-                    activeStatus === st.key ? null : st.key,
-                  )
-                }
-                className="size-4 rounded border-[var(--border-green)] accent-brand-dark"
-              />
-              <span className="text-sm text-foreground">{st.label}</span>
-            </label>
-          ))}
+      {!isMine && (
+        <div>
+          <h3 className="mb-3 font-heading text-lg font-semibold text-brand-darker">
+            Trạng thái
+          </h3>
+          <div className="space-y-2">
+            {STATUSES.map((st) => (
+              <label key={st.key} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={activeStatus === st.key}
+                  onChange={() =>
+                    updateFilter(
+                      "status",
+                      activeStatus === st.key ? null : st.key,
+                    )
+                  }
+                  className="size-4 rounded border-[var(--border-green)] accent-brand-dark"
+                />
+                <span className="text-sm text-foreground">{st.label}</span>
+              </label>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Khu vực */}
       <div>

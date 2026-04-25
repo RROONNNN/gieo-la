@@ -38,15 +38,21 @@ const listPosts = async (req, res) => {
     });
   }
 
-  const { category, status, search, page, limit } = parsed.data;
+  const { category, status, search, mine, page, limit } = parsed.data;
   const filter = {};
 
   if (category) filter.category = category;
-  // Public visitors only see available posts by default
-  if (status) {
-    filter.status = status;
+
+  if (mine && req.user) {
+    // Authenticated owner: show all own posts regardless of status
+    filter.author = req.user._id;
   } else {
-    filter.status = POST_STATUSES.AVAILABLE;
+    // Public visitors only see available posts by default
+    if (status) {
+      filter.status = status;
+    } else {
+      filter.status = POST_STATUSES.AVAILABLE;
+    }
   }
   if (search) {
     const normalized = removeAccents(search);
@@ -206,7 +212,7 @@ const updatePostStatus = async (req, res) => {
   // Validate status transitions for author
   const ALLOWED_TRANSITIONS = {
     [POST_STATUSES.AVAILABLE]: [POST_STATUSES.IN_TRANSACTION],
-    [POST_STATUSES.IN_TRANSACTION]: [POST_STATUSES.TRADED],
+    [POST_STATUSES.IN_TRANSACTION]: [POST_STATUSES.TRADED, POST_STATUSES.AVAILABLE],
   };
 
   const allowed = ALLOWED_TRANSITIONS[post.status] || [];
@@ -242,6 +248,13 @@ const adminCompletePost = async (req, res) => {
     return res.status(409).json({
       success: false,
       message: 'Chỉ có thể hoàn thành bài đăng đang ở trạng thái "Đã giao dịch"',
+    });
+  }
+
+  if (!post.receiverConfirmed) {
+    return res.status(409).json({
+      success: false,
+      message: 'Người nhận chưa xác nhận đã nhận đồ. Vui lòng chờ người nhận xác nhận trước.',
     });
   }
 
@@ -399,6 +412,52 @@ const toggleLikePost = async (req, res) => {
   });
 };
 
+/**
+ * PATCH /api/v1/admin/posts/:id/status
+ * Admin sets a post to any status. When setting 'completed', mirrors adminCompletePost logic.
+ */
+const adminUpdatePostStatus = async (req, res) => {
+  const parsed = updatePostStatusSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({
+      success: false,
+      message: 'Dữ liệu không hợp lệ',
+      errors: parsed.error.errors,
+    });
+  }
+
+  const post = await Post.findById(req.params.id);
+  if (!post) {
+    return res.status(404).json({ success: false, message: 'Không tìm thấy bài đăng' });
+  }
+
+  const { status: newStatus } = parsed.data;
+
+  if (newStatus === POST_STATUSES.COMPLETED && post.status !== POST_STATUSES.COMPLETED) {
+    if (!post.receiverConfirmed) {
+      return res.status(409).json({
+        success: false,
+        message: 'Người nhận chưa xác nhận đã nhận đồ. Vui lòng chờ người nhận xác nhận trước.',
+      });
+    }
+    post.completedAt = new Date();
+    const User = require('../models/User');
+    await User.findByIdAndUpdate(post.author, { $inc: { completedDonations: 1 } });
+    await logAudit(req.user._id, 'Post', post._id, 'post.complete', {}, req);
+  }
+
+  post.status = newStatus;
+  await post.save();
+
+  await logAudit(req.user._id, 'Post', post._id, 'post.admin_status_update', { newStatus }, req);
+
+  return res.json({
+    success: true,
+    message: 'Đã cập nhật trạng thái bài đăng',
+    data: { post },
+  });
+};
+
 module.exports = {
   listPosts,
   getPost,
@@ -407,6 +466,7 @@ module.exports = {
   deletePost,
   updatePostStatus,
   adminCompletePost,
+  adminUpdatePostStatus,
   adminDeletePost,
   adminTogglePin,
   adminListPosts,

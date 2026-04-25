@@ -94,6 +94,16 @@ const postSchema = new mongoose.Schema(
       default: null,
     },
 
+    // Recipient confirms they received the item (set by selectedApplicant)
+    receiverConfirmed: {
+      type: Boolean,
+      default: false,
+    },
+    receiverConfirmedAt: {
+      type: Date,
+      default: null,
+    },
+
     // Location
     location: {
       city: { type: String, default: 'Hà Nội' },

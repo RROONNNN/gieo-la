@@ -28,6 +28,14 @@ export function selectApplicant(postId: string, applicantId: string) {
     { applicantId },
   );
 }
+export function undoSelectApplicant(postId: string) {
+  return apiClient.post(ENDPOINTS.APPLICATIONS.UNDO(postId));
+}
+
+export function confirmReceipt(postId: string) {
+  return apiClient.post(ENDPOINTS.APPLICATIONS.CONFIRM_RECEIPT(postId));
+}
+
 
 export function getMyLimit() {
   return apiClient.get<MonthlyLimitInfo>(ENDPOINTS.APPLICATIONS.MY_LIMIT);

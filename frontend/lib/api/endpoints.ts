@@ -42,12 +42,15 @@ export const ENDPOINTS = {
   APPLICATIONS: {
     LIST: (postId: string) => `${API_BASE}/applications/${postId}`,
     APPLY: (postId: string) => `${API_BASE}/applications/${postId}`,
+    UNDO: (postId: string) => `${API_BASE}/applications/${postId}/undo-select`,
     SELECT: (postId: string) => `${API_BASE}/applications/${postId}/select`,
+    CONFIRM_RECEIPT: (postId: string) => `${API_BASE}/applications/${postId}/confirm-receipt`,
     MY_LIMIT: `${API_BASE}/applications/my-limit`,
   },
   ADMIN_POSTS: {
     LIST: `${API_BASE}/admin/posts`,
     COMPLETE: (id: string) => `${API_BASE}/admin/posts/${id}/complete`,
+    UPDATE_STATUS: (id: string) => `${API_BASE}/admin/posts/${id}/status`,
     PIN: (id: string) => `${API_BASE}/admin/posts/${id}/pin`,
     DELETE: (id: string) => `${API_BASE}/admin/posts/${id}`,
   },

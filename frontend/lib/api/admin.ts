@@ -1,5 +1,7 @@
 import { apiClient } from "./client";
+import { ENDPOINTS } from "./endpoints";
 import type { UserRole, VerificationStatus } from "@/types/enums";
+import type { Post } from "@/types/post";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -59,5 +61,14 @@ export function grantIndividualBadge(userId: string, reason?: string) {
   return apiClient.patch<BadgeActionResponse>(
     `/api/v1/admin/users/${userId}/individual-status`,
     { action: "grant", reason },
+  );
+}
+
+// ─── Admin post status ────────────────────────────────────────────────────────
+
+export function adminUpdatePostStatus(postId: string, status: string) {
+  return apiClient.patch<{ post: Post }>(
+    ENDPOINTS.ADMIN_POSTS.UPDATE_STATUS(postId),
+    { status },
   );
 }

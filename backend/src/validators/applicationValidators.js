@@ -13,7 +13,6 @@ const applySchema = z.object({
 const selectApplicantSchema = z.object({
   applicantId: z.string().min(1, 'Vui lòng chọn người nhận'),
 });
-
 module.exports = {
   applySchema,
   selectApplicantSchema,

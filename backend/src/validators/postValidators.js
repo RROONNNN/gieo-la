@@ -81,6 +81,7 @@ const listPostsQuerySchema = z.object({
     })
     .optional(),
   search: z.string().max(200).trim().optional(),
+  mine: z.coerce.boolean().optional().default(false),
   // Admin-only: search by author name / email
   authorSearch: z.string().max(100).trim().optional(),
   // Admin-only: date range (ISO date strings, e.g. 2025-01-01)

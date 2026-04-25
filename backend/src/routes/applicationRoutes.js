@@ -7,6 +7,8 @@ const {
   listApplications,
   selectApplicant,
   getMyLimit,
+  undoSelectApplicant,
+  confirmReceipt,
 } = require('../controllers/applicationController');
 
 const router = Router();
@@ -22,5 +24,10 @@ router.post('/:postId', protect, applyForPost);
 
 // Authenticated (post author): select an applicant
 router.post('/:postId/select', protect, selectApplicant);
+
+router.post('/:postId/undo-select', protect, undoSelectApplicant);
+
+// Authenticated (selected applicant): confirm receipt of item
+router.post('/:postId/confirm-receipt', protect, confirmReceipt);
 
 module.exports = router;

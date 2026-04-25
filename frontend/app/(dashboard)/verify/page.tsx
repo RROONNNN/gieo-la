@@ -21,7 +21,8 @@ export default async function VerifyPage() {
     getFreshUserFromApi(),
     getMyRequestsServer().catch(() => []),
   ]);
-  const latestRequest = allRequests[0] ?? null;
+  const latestRequest = 
+  allRequests[0] ?? null;
   const hasPendingRequest = latestRequest?.status === "pending";
 
   // Use fresh role from DB; fall back to JWT role if API call failed.
@@ -41,10 +42,9 @@ export default async function VerifyPage() {
     <main className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-xl font-bold text-foreground mb-6">Xác minh tài khoản</h1>
 
-      {
- isAlreadyVerified && (<VerificationStatusCard latestRequest={latestRequest} isAlreadyVerified={isAlreadyVerified} />)
-
-      }
+      {(isAlreadyVerified || hasPendingRequest) && (
+        <VerificationStatusCard latestRequest={latestRequest} isAlreadyVerified={isAlreadyVerified} />
+      )}
 
       {!hasPendingRequest && !isAlreadyVerified && (
         <SubmitVerificationForm
@@ -55,8 +55,8 @@ export default async function VerifyPage() {
         />
       )}
 
-      {allRequests.length > 1 && (
-        <VerificationHistory requests={allRequests.slice(1)} />
+      {allRequests.length >0  && (
+        <VerificationHistory requests={allRequests} />
       )}
     </main>
   );

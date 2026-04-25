@@ -12,6 +12,7 @@ export interface ListPostsParams {
   category?: PostCategory;
   status?: PostStatus;
   search?: string;
+  mine?: boolean;
   page?: number;
   limit?: number;
 }
@@ -26,6 +27,7 @@ export async function fetchPosts(
   if (params.category) query.set("category", params.category);
   if (params.status) query.set("status", params.status);
   if (params.search) query.set("search", params.search);
+  if (params.mine) query.set("mine", "true");
   if (params.page) query.set("page", String(params.page));
   if (params.limit) query.set("limit", String(params.limit));
 
@@ -76,4 +78,29 @@ export function toggleLikePost(id: string) {
   return apiClient.post<{ liked: boolean; likesCount: number }>(
     ENDPOINTS.POSTS.LIKE(id),
   );
+}
+
+// ─── SSR with auth (mine filter) ─────────────────────────────────────────────
+
+export async function fetchMyPostsServer(
+  token: string,
+  params: Omit<ListPostsParams, "mine"> = {},
+): Promise<PostListResponse> {
+  const query = new URLSearchParams({ mine: "true" });
+  if (params.category) query.set("category", params.category);
+  if (params.status) query.set("status", params.status);
+  if (params.search) query.set("search", params.search);
+  if (params.page) query.set("page", String(params.page));
+  if (params.limit) query.set("limit", String(params.limit));
+
+  const url = `${BASE_URL}${ENDPOINTS.POSTS.LIST}?${query}`;
+  const res = await fetch(url, {
+    cache: "no-store",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const json = await res.json();
+
+  if (!res.ok) throw new Error(json.message || "Không tải được danh sách bài đăng");
+
+  return json.data as PostListResponse;
 }

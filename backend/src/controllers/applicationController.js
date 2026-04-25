@@ -265,9 +265,93 @@ const getMyLimit = async (req, res) => {
   });
 };
 
+const undoSelectApplicant = async (req, res) => {
+  const { postId } = req.params;
+
+  const post = await Post.findById(postId);
+  if (!post) {
+    return res.status(404).json({ success: false, message: 'Không tìm thấy bài đăng' });
+  }
+  if (post.author.toString() !== req.user._id.toString()) {
+    return res.status(403).json({ success: false, message: 'Chỉ người đăng bài mới có quyền chọn người nhận' });
+  }
+  if (post.status === POST_STATUSES.TRADED) {
+    return res.status(409).json({
+      success: false,
+      message: 'Bài đăng đã hoàn tất giao dịch, không thể hủy chọn người nhận',
+    });
+  }
+
+  await Application.updateMany(
+    { post: postId },
+    { status: APPLICATION_STATUSES.PENDING }
+  );
+  post.status = POST_STATUSES.AVAILABLE;
+  post.selectedApplicant = null;
+  post.receiverConfirmed = false;
+  post.receiverConfirmedAt = null;
+  await post.save();
+
+  return res.json({
+    success: true,
+    message: 'Đã hủy chọn người nhận thành công',
+    data: { post },
+  });
+};
+
+/**
+ * POST /api/v1/applications/:postId/confirm-receipt
+ * selectedApplicant confirms they received the item. Only allowed when post is 'traded'.
+ */
+const confirmReceipt = async (req, res) => {
+  const { postId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(postId)) {
+    return res.status(400).json({ success: false, message: 'ID bài đăng không hợp lệ' });
+  }
+
+  const post = await Post.findById(postId);
+  if (!post) {
+    return res.status(404).json({ success: false, message: 'Không tìm thấy bài đăng' });
+  }
+  if (post.status !== POST_STATUSES.TRADED) {
+    return res.status(409).json({
+      success: false,
+      message: 'Bài đăng chưa ở trạng thái đã giao',
+    });
+  }
+  if (
+    !post.selectedApplicant ||
+    post.selectedApplicant.toString() !== req.user._id.toString()
+  ) {
+    return res.status(403).json({
+      success: false,
+      message: 'Bạn không phải người nhận được chọn cho bài đăng này',
+    });
+  }
+  if (post.receiverConfirmed) {
+    return res.status(409).json({
+      success: false,
+      message: 'Bạn đã xác nhận nhận đồ rồi',
+    });
+  }
+
+  post.receiverConfirmed = true;
+  post.receiverConfirmedAt = new Date();
+  await post.save();
+
+  return res.json({
+    success: true,
+    message: 'Đã xác nhận nhận đồ thành công',
+    data: { post },
+  });
+};
+
 module.exports = {
   applyForPost,
   listApplications,
   selectApplicant,
   getMyLimit,
+  undoSelectApplicant,
+  confirmReceipt,
 };

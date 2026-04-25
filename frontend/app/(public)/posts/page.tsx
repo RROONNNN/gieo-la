@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { fetchPosts } from "@/lib/api/posts";
+import { Suspense } from "react";
+import { fetchPosts, fetchMyPostsServer } from "@/lib/api/posts";
+import { getTokenFromCookie, getCurrentUserFromCookie } from "@/lib/auth/server";
 import { PostCard } from "@/components/posts/PostCard";
 import { PostFilters } from "@/components/posts/PostFilters";
 import { SearchBar } from "@/components/ui/SearchBar";
@@ -19,6 +21,7 @@ interface PageProps {
     search?: string;
     city?: string;
     page?: string;
+    mine?: string;
   }>;
 }
 
@@ -28,16 +31,29 @@ export default async function PostsPage({ searchParams }: PageProps) {
   const status = params.status as import("@/types/enums").PostStatus | undefined;
   const search = params.search || undefined;
   const city = params.city || undefined;
+  const mine = params.mine === "true";
   const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
   const limit = 12;
+
+  const [viewer, token] = await Promise.all([
+    getCurrentUserFromCookie(),
+    getTokenFromCookie(),
+  ]);
+  const isAuthenticated = viewer !== null;
 
   let posts: Post[];
   let total;
 
   try {
-    const data = await fetchPosts({ category, status, search, page, limit });
-    posts = data.posts;
-    total = data.total;
+    if (mine && token) {
+      const data = await fetchMyPostsServer(token, { category, status, search, page, limit });
+      posts = data.posts;
+      total = data.total;
+    } else {
+      const data = await fetchPosts({ category, status, search, page, limit });
+      posts = data.posts;
+      total = data.total;
+    }
   } catch {
     posts = [];
     total = 0;
@@ -73,7 +89,14 @@ export default async function PostsPage({ searchParams }: PageProps) {
       <div className="flex gap-8">
         {/* Sidebar filters */}
         <aside className="hidden w-[220px] shrink-0 lg:block">
-          <PostFilters currentCategory={category} currentSearch={search} />
+          <Suspense fallback={null}>
+            <PostFilters
+              currentCategory={category}
+              currentSearch={search}
+              isAuthenticated={isAuthenticated}
+              isMine={mine}
+            />
+          </Suspense>
         </aside>
 
         {/* Main content */}

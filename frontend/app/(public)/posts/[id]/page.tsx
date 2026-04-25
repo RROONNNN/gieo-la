@@ -42,6 +42,15 @@ export default async function PostDetailPage({ params }: PageProps) {
   const authorId = author?._id || (typeof post.author === "string" ? post.author : "");
   const isAuthor = viewer !== null && viewer._id === authorId;
 
+  const selectedApplicantId =
+    post.selectedApplicant === null
+      ? null
+      : typeof post.selectedApplicant === "string"
+        ? post.selectedApplicant
+        : post.selectedApplicant._id;
+  const isSelectedApplicant =
+    viewer !== null && selectedApplicantId !== null && viewer._id === selectedApplicantId;
+
   return (
     <div className="py-10">
       {/* Breadcrumb */}
@@ -161,12 +170,15 @@ export default async function PostDetailPage({ params }: PageProps) {
             postId={post._id}
             postStatus={post.status}
             isAuthor={isAuthor}
+            receiverConfirmed={post.receiverConfirmed}
           />
           <ApplicationPanel
             postId={post._id}
             postStatus={post.status}
             postAuthorId={authorId}
             applications={applications}
+            isSelectedApplicant={isSelectedApplicant}
+            receiverConfirmed={post.receiverConfirmed}
           />
         </aside>
       </div>
