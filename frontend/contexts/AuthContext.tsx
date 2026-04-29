@@ -10,6 +10,7 @@ import {
 import type { SafeUser } from "@/types/user";
 import {
   loginApi,
+  logoutApi,
   refreshTokenApi,
   registerMemberApi,
   registerNgoApi,
@@ -20,15 +21,26 @@ import {
   type RegisterIndividualPayload,
 } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
+import { setAccessToken } from "@/lib/api/client";
 
-const TOKEN_KEY = "la_lanh_token";
+// SSR mirror cookie — short-lived, matches access token expiry (15 min)
+const SSR_COOKIE_KEY = "la_lanh_token";
+const SSR_COOKIE_MAX_AGE = 900; // seconds
+
+function persistForSSR(token: string) {
+  document.cookie = `${SSR_COOKIE_KEY}=${token}; path=/; SameSite=Lax; Max-Age=${SSR_COOKIE_MAX_AGE}`;
+}
+
+function clearSSRCookie() {
+  document.cookie = `${SSR_COOKIE_KEY}=; path=/; Max-Age=0`;
+}
 
 interface AuthContextValue {
   user: SafeUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (payload: LoginPayload) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   registerMember: (payload: RegisterMemberPayload) => Promise<void>;
   registerNgo: (payload: RegisterNgoPayload) => Promise<void>;
   registerIndividual: (payload: RegisterIndividualPayload) => Promise<void>;
@@ -37,75 +49,40 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function setToken(token: string) {
-  localStorage.setItem(TOKEN_KEY, token);
-  // Mirror to cookie so Server Components can read it for SSR
-  document.cookie = `${TOKEN_KEY}=${token}; path=/; SameSite=Lax`;
-}
-
-function clearToken() {
-  localStorage.removeItem(TOKEN_KEY);
-  document.cookie = `${TOKEN_KEY}=; path=/; Max-Age=0`;
-}
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<SafeUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  /**
+   * Calls POST /auth/refresh-token (reads httpOnly cookie automatically).
+   * On success: stores access token in memory + SSR mirror cookie.
+   * On 401: clears state.
+   */
   const refreshUser = useCallback(async () => {
     try {
       const res = await refreshTokenApi();
-      setToken(res.data.token);
+      setAccessToken(res.data.token);
+      persistForSSR(res.data.token);
       setUser(res.data.user);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        clearToken();
+        setAccessToken(null);
+        clearSSRCookie();
         setUser(null);
       }
     }
   }, []);
 
-  // Attempt to restore session on mount
+  // Restore session on mount by using the httpOnly refresh token cookie
   useEffect(() => {
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
-    if (!token) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsLoading(false);
-      return;
-    }
     refreshUser().finally(() => setIsLoading(false));
-  }, [refreshUser]);
-
-  // Keep auth cookie/token aligned with latest role while user is active
-  useEffect(() => {
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
-    if (!token) return;
-
-    const syncSession = () => {
-      refreshUser().catch(() => undefined);
-    };
-
-    const onVisibilityChange = () => {
-      if (document.visibilityState === "visible") syncSession();
-    };
-
-    const intervalId = window.setInterval(syncSession, 60 * 1000);
-    window.addEventListener("focus", syncSession);
-    document.addEventListener("visibilitychange", onVisibilityChange);
-
-    return () => { //clean up
-      window.clearInterval(intervalId);
-      window.removeEventListener("focus", syncSession);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
   }, [refreshUser]);
 
   // Handle forced logout when account is locked (dispatched by apiClient 403 handler)
   useEffect(() => {
     const handleForcedLogout = () => {
-      clearToken();
+      setAccessToken(null);
+      clearSSRCookie();
       setUser(null);
     };
     window.addEventListener("auth:logout", handleForcedLogout);
@@ -114,31 +91,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (payload: LoginPayload) => {
     const res = await loginApi(payload);
-    setToken(res.data.token);
+    setAccessToken(res.data.token);
+    persistForSSR(res.data.token);
     setUser(res.data.user);
   }, []);
 
-  const logout = useCallback(() => {
-    clearToken();
+  const logout = useCallback(async () => {
+    try {
+      await logoutApi();
+    } catch {
+      // best-effort — clear client state regardless
+    }
+    setAccessToken(null);
+    clearSSRCookie();
     setUser(null);
   }, []);
 
   const registerMember = useCallback(async (payload: RegisterMemberPayload) => {
     const res = await registerMemberApi(payload);
-    setToken(res.data.token);
+    setAccessToken(res.data.token);
+    persistForSSR(res.data.token);
     setUser(res.data.user);
   }, []);
 
   const registerNgo = useCallback(async (payload: RegisterNgoPayload) => {
     const res = await registerNgoApi(payload);
-    setToken(res.data.token);
+    setAccessToken(res.data.token);
+    persistForSSR(res.data.token);
     setUser(res.data.user);
   }, []);
 
   const registerIndividual = useCallback(
     async (payload: RegisterIndividualPayload) => {
       const res = await registerIndividualApi(payload);
-      setToken(res.data.token);
+      setAccessToken(res.data.token);
+      persistForSSR(res.data.token);
       setUser(res.data.user);
     },
     [],

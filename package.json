@@ -14,5 +14,8 @@
     "start": "npm run start --workspace=backend",
     "build": "npm run build --workspace=frontend",
     "install:all": "npm install"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6"
   }
 }

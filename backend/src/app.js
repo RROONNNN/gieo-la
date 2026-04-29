@@ -4,6 +4,7 @@ const path = require('path');
 const env = require('./config/env');
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
@@ -18,6 +19,9 @@ app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
 
 // ── Request logging ───────────────────────────
 app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+
+// ── Cookie parser ─────────────────────────────
+app.use(cookieParser());
 
 // ── Body parsers ──────────────────────────────
 app.use(express.json({ limit: '10kb' }));

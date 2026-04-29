@@ -8,6 +8,7 @@ export const ENDPOINTS = {
     REGISTER_INDIVIDUAL: `${API_BASE}/auth/register/individual`,
     ME: `${API_BASE}/auth/me`,
     REFRESH_TOKEN: `${API_BASE}/auth/refresh-token`,
+    LOGOUT: `${API_BASE}/auth/logout`,
   },
   VERIFICATION: {
     REQUEST: `${API_BASE}/verification-requests`,

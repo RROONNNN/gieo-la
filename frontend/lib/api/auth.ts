@@ -87,3 +87,7 @@ export function updateProfileApi(
 ): Promise<ApiResponse<{ user: SafeUser }>> {
   return apiClient.patch<{ user: SafeUser }>(ENDPOINTS.AUTH.ME, payload);
 }
+
+export function logoutApi(): Promise<ApiResponse<void>> {
+  return apiClient.post<void>(ENDPOINTS.AUTH.LOGOUT);
+}

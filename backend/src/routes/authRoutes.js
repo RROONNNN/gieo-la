@@ -8,6 +8,7 @@ const {
   login,
   getMe,
   refreshToken,
+  logout,
   updateMe,
 } = require('../controllers/authController');
 const { protect } = require('../middlewares/auth');
@@ -19,10 +20,11 @@ router.post('/register/member',     registerMember);
 router.post('/register/ngo',        registerNgo);
 router.post('/register/individual', registerIndividual);
 router.post('/login',               login);
+router.post('/refresh-token',       refreshToken); // reads httpOnly cookie — no Bearer needed
+router.post('/logout',              logout);       // clears cookie — no Bearer needed
 
 // ── Protected ─────────────────────────────────────────────────────────────────
 router.get('/me',   protect, getMe);
-router.post('/refresh-token', protect, refreshToken);
 router.patch('/me', protect, updateMe);
 
 module.exports = router;
