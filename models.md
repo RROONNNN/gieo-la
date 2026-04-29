@@ -175,3 +175,47 @@
 
 **Indexes:** `{ post: 1, createdAt: 1 }`
 **Relations:** post → Post, author → User
+
+---
+
+## Conversation (`conversations`)
+
+| Field | Type | Constraints |
+|---|---|---|
+| _id | ObjectId | auto |
+| participants | [ObjectId] | required, ref: User, exactly 2 participants |
+| lastMessage.content | String | default: null |
+| lastMessage.type | String | enum: text/image/video/file, default: null |
+| lastMessage.senderId | ObjectId | ref: User, default: null |
+| lastMessage.createdAt | Date | default: null |
+| unreadCounts | Map<String, Number> | key = userId.toString(), default: {} |
+| createdAt | Date | auto (timestamps) |
+| updatedAt | Date | auto (timestamps) |
+
+**Indexes:**
+- `{ participants: 1 }`
+- `{ participants: 1, updatedAt: -1 }`
+
+**Relations:** participants → User
+
+---
+
+## Message (`messages`)
+
+| Field | Type | Constraints |
+|---|---|---|
+| _id | ObjectId | auto |
+| conversationId | ObjectId | required, ref: Conversation |
+| sender | ObjectId | ref: User, default: null (null when isSystem=true) |
+| type | String | required, enum: text / image / video / file |
+| content | String | trim, maxlength: 2000, default: null |
+| fileUrl | String | Cloudinary URL, default: null |
+| fileName | String | original filename, default: null |
+| fileSize | Number | bytes, default: null |
+| fileMimeType | String | MIME type, default: null |
+| isSystem | Boolean | default: false |
+| createdAt | Date | auto (timestamps) |
+| updatedAt | Date | auto (timestamps) |
+
+**Indexes:** `{ conversationId: 1, createdAt: -1 }`
+**Relations:** conversationId → Conversation, sender → User

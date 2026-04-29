@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { User, LogOut, ChevronDown } from "lucide-react";
+import { User, LogOut, ChevronDown, MessageSquare } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { useChatContext } from "@/contexts/ChatContext";
 import { UserRole } from "@/types/enums";
 
 const NAV_LINKS = [
@@ -20,6 +21,7 @@ export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
+  const { totalUnread } = useChatContext();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -87,6 +89,17 @@ export function Navbar() {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
+          {/* Chat icon with unread badge */}
+          {isAuthenticated && (
+            <Link href="/chat" className="relative p-1 text-white/80 hover:text-white transition-colors">
+              <MessageSquare className="size-5" />
+              {totalUnread > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
+                  {totalUnread > 99 ? "99+" : totalUnread}
+                </span>
+              )}
+            </Link>
+          )}
           {isAuthenticated && user ? (
             <div className="relative" ref={dropdownRef}>
               <button

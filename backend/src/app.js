@@ -7,7 +7,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
-const connectDB = require('./config/db');
+// const connectDB = require('./config/db');
 const apiRouter = require('./routes/index');
 
 const app = express();
@@ -64,9 +64,8 @@ app.use((err, req, res, next) => {  // Multer file size/format errors
   });
 });
 
-// ── Start server ──────────────────────────────
-connectDB().then(() => {
-  app.listen(env.PORT, () => {
-    console.log(`🌿 Server đang chạy tại http://localhost:${env.PORT}`);
-  });
-});
+// ── Export app for server.js to wrap with http.Server ─────────────────────
+const http = require('http');
+const server = http.createServer(app);
+
+module.exports = { app, server };

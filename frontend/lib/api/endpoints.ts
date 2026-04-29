@@ -64,5 +64,11 @@ export const ENDPOINTS = {
   USERS: {
     PROFILE: (id: string) => `${API_BASE}/users/${id}`,
   },
+  CHAT: {
+    CONVERSATIONS: `${API_BASE}/chat/conversations`,
+    CONVERSATION_MESSAGES: (id: string) => `${API_BASE}/chat/conversations/${id}/messages`,
+    CONVERSATION_READ: (id: string) => `${API_BASE}/chat/conversations/${id}/read`,
+    UPLOAD: `${API_BASE}/chat/upload`,
+  },
 } as const;
 export { BASE_URL };

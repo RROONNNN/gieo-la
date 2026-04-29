@@ -230,6 +230,53 @@ const selectApplicant = async (req, res) => {
   post.selectedApplicant = applicantId;
   await post.save();
 
+  // Auto-create conversation and send system notification message
+  try {
+    const Conversation = require('../models/Conversation');
+    const Message = require('../models/Message');
+    const { getIO } = require('../socket/index');
+
+    const postAuthorId = req.user._id.toString();
+    const recipientId = applicantId.toString();
+
+    let conv = await Conversation.findOne({
+      participants: { $all: [postAuthorId, recipientId], $size: 2 },
+    });
+    if (!conv) {
+      conv = await Conversation.create({ participants: [postAuthorId, recipientId] });
+    }
+
+    const systemText = `🎉 Bạn đã được chọn nhận món đồ từ bài đăng "${post.title}". Hãy liên hệ để sắp xếp nhận đồ nhé!`;
+
+    const msg = await Message.create({
+      conversationId: conv._id,
+      sender: null,
+      type: 'text',
+      content: systemText,
+      isSystem: true,
+    });
+
+    conv.lastMessage = { content: systemText, type: 'text', senderId: null, createdAt: msg.createdAt };
+    const currentUnread = conv.unreadCounts.get(recipientId) || 0;
+    conv.unreadCounts.set(recipientId, currentUnread + 1);
+    await conv.save();
+
+    try {
+      const io = getIO();
+      io.to(`conv_${conv._id}`).emit('new_message', msg.toObject());
+      io.to(`conv_${conv._id}`).emit('conversation_updated', {
+        conversationId: conv._id,
+        lastMessage: conv.lastMessage,
+        unreadCounts: Object.fromEntries(conv.unreadCounts),
+      });
+    } catch {
+      // Socket not initialized (e.g. in tests) — safe to skip
+    }
+  } catch (err) {
+    // Non-critical: chat failure must not break the selection response
+    console.error('[chat auto-message] error:', err.message);
+  }
+
   return res.json({
     success: true,
     message: 'Đã chọn người nhận đồ thành công',

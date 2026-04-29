@@ -165,3 +165,90 @@ Kết quả: thay vì thấy `userId: "507f1f77bcf86cd799439011"`, bạn thấy:
 ```
 
 **Lưu ý**: chỉ populate những field cần thiết (tham số thứ 2) để tránh lộ thông tin nhạy cảm như `passwordHash`.
+
+---
+
+## Socket.IO (Backend)
+
+**Dùng để làm gì?**
+Tạo kết nối WebSocket hai chiều (real-time) giữa server và client — dùng trong chat, notifications, live updates.
+
+### Ví dụ cơ bản
+```js
+// Khởi tạo server
+const { Server } = require('socket.io');
+const io = new Server(httpServer, { cors: { origin: process.env.CLIENT_URL } });
+
+// Auth middleware
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token;
+  const payload = jwt.verify(token, secret);
+  socket.userId = payload.id;
+  next();
+});
+
+// Xử lý events
+io.on('connection', (socket) => {
+  socket.join(`user:${socket.userId}`);  // join room riêng
+
+  socket.on('send_message', async (data) => {
+    // xử lý, lưu DB, rồi broadcast
+    io.to(`conv:${data.conversationId}`).emit('new_message', savedMsg);
+  });
+});
+```
+
+### Lưu ý & Mẹo
+- Phải dùng `http.createServer(app)` thay vì `app.listen()` để Socket.IO attach vào cùng HTTP server
+- `io.to(room).emit()` gửi đến tất cả trong room; `socket.emit()` chỉ gửi lại người gửi
+- Bọc event handler trong try-catch và emit `error` về client để debug
+- Dùng singleton `getIO()` để access `io` từ các controller khác (ví dụ auto-message khi chọn applicant)
+
+---
+
+## socket.io-client (Frontend)
+
+**Dùng để làm gì?**
+Thư viện phía client để kết nối tới Socket.IO server, lắng nghe và gửi events real-time.
+
+### Ví dụ cơ bản
+```ts
+import { io, Socket } from 'socket.io-client';
+
+const socket = io('http://localhost:5000', {
+  auth: { token: localStorage.getItem('la_lanh_token') },
+  transports: ['websocket'],
+});
+
+socket.on('connect', () => console.log('connected'));
+socket.on('new_message', (msg) => setMessages(prev => [...prev, msg]));
+socket.emit('send_message', { conversationId, content, type: 'text' });
+socket.disconnect(); // cleanup on unmount
+```
+
+### Lưu ý & Mẹo
+- Luôn gọi `socket.disconnect()` trong cleanup của useEffect để tránh memory leak
+- Dùng `useRef<Socket>` thay vì `useState` để tránh re-render khi socket reconnect
+- JWT token phải được truyền qua `auth` option (không phải header) khi dùng Socket.IO
+- Kiểm tra `socket.connected` trước khi emit để tránh lỗi im lặng khi mất kết nối
+
+---
+
+## date-fns
+
+**Dùng để làm gì?**
+Format và tính toán ngày giờ nhẹ nhàng, tree-shakeable — dùng trong chat timestamp, so sánh thời gian.
+
+### Ví dụ cơ bản
+```ts
+import { formatDistanceToNow } from 'date-fns';
+import { vi } from 'date-fns/locale';
+
+formatDistanceToNow(new Date(message.createdAt), { addSuffix: true, locale: vi });
+// → "5 phút trước"
+```
+
+### Lưu ý & Mẹo
+- Import trực tiếp từng function (không import toàn bộ) để giữ bundle nhỏ
+- Luôn truyền `locale: vi` để hiển thị tiếng Việt
+- `formatDistanceToNow` tốt cho chat timestamp; `format(date, 'dd/MM/yyyy')` cho ngày cụ thể

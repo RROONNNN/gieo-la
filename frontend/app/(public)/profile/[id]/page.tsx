@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { BadgeChip } from "@/components/ui/BadgeChip";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { formatDateVN } from "@/lib/utils";
+import { ChatButton } from "@/components/chat/ChatButton";
 
 interface ProfilePageProps {
   params: Promise<{ id: string }>;
@@ -89,6 +90,13 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           <p className="mt-1 text-xs text-muted-foreground">
             Tham gia từ {formatDateVN(profileUser.createdAt)}
           </p>
+
+          {/* Chat button — visible to authenticated non-owners */}
+          {viewer && !isOwn && (
+            <div className="mt-3">
+              <ChatButton profileUserId={profileUser._id} />
+            </div>
+          )}
         </div>
       </div>
 

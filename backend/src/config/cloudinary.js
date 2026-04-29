@@ -52,4 +52,42 @@ const uploadDocument = multer({
   },
 });
 
-module.exports = { cloudinary, upload, uploadDocument };
+// module.exports moved to end of file — see below
+
+// ── Chat media storage (images, videos, files) ─────────────────────────────
+const chatMediaStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'gieo-la/chat',
+    resource_type: 'auto',
+    allowed_formats: [
+      'jpg', 'jpeg', 'png', 'webp', 'gif',
+      'mp4', 'mov', 'avi',
+      'pdf', 'doc', 'docx', 'xls', 'xlsx', 'zip',
+    ],
+  },
+});
+
+const uploadChatMedia = multer({
+  storage: chatMediaStorage,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB cap
+  fileFilter: (_req, file, cb) => {
+    const allowedMimes = [
+      'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+      'video/mp4', 'video/quicktime', 'video/x-msvideo',
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/zip',
+    ];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Định dạng file không được hỗ trợ trong chat.'));
+    }
+  },
+});
+
+module.exports = { cloudinary, upload, uploadDocument, uploadChatMedia };

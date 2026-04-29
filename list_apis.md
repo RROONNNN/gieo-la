@@ -107,6 +107,16 @@
 | POST | /api/v1/posts/:postId/comments | Authenticated | Create a comment on a post |
 | DELETE | /api/v1/posts/:postId/comments/:commentId | Authenticated | Delete a comment (own comment or admin) |
 
+## 13) Chat APIs
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | /api/v1/chat/conversations | Authenticated | List all conversations for current user (sorted by updatedAt desc) |
+| POST | /api/v1/chat/conversations | Authenticated | Get or create a 1-1 conversation with another user (body: `{ participantId }`) |
+| GET | /api/v1/chat/conversations/:id/messages | Authenticated | Get messages (cursor pagination via `?before=<messageId>&limit=30`) |
+| PATCH | /api/v1/chat/conversations/:id/read | Authenticated | Mark conversation as read (reset unreadCount to 0) |
+| POST | /api/v1/chat/upload | Authenticated | Upload a chat file (image ≤20MB, video ≤50MB, doc/zip ≤20MB); returns `{ url, fileName, fileSize, fileMimeType }` |
+
 ## Notes
 
 - All endpoints under `/api/v1/*` are mounted from backend router.
