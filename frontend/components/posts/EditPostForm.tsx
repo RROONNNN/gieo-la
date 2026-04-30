@@ -10,8 +10,7 @@ import { ENDPOINTS, BASE_URL } from "@/lib/api/endpoints";
 import { CATEGORY_LABEL, CONDITION_LABEL } from "@/lib/postLabels";
 import type { PostCategory, PostCondition } from "@/types/enums";
 import type { Post } from "@/types/post";
-
-const TOKEN_KEY = "la_lanh_token";
+import { getAccessToken } from "@/lib/api/client";
 const CATEGORIES = Object.entries(CATEGORY_LABEL) as [PostCategory, string][];
 const CONDITIONS = Object.entries(CONDITION_LABEL) as [PostCondition, string][];
 
@@ -53,7 +52,7 @@ export function EditPostForm({ post }: EditPostFormProps) {
     const index = images.length;
     setUploadingIndex(index);
     try {
-      const token = localStorage.getItem(TOKEN_KEY);
+      const token = getAccessToken();
       const data = new FormData();
       data.append("image", file);
       const res = await fetch(`${BASE_URL}${ENDPOINTS.UPLOAD.IMAGE}`, {

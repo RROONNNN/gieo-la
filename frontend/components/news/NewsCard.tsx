@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Pin } from "lucide-react";
 import { Badge, type BadgeVariant } from "@/components/ui/Badge";
 
 interface NewsCardProps {
@@ -9,6 +10,7 @@ interface NewsCardProps {
   category: string;
   description: string;
   publishedAt: string;
+  isPinned?: boolean;
 }
 
 const CATEGORY_BADGE: Record<string, { label: string; variant: BadgeVariant }> = {
@@ -25,6 +27,7 @@ export function NewsCard({
   category,
   description,
   publishedAt,
+  isPinned = false,
 }: NewsCardProps) {
   const cat = CATEGORY_BADGE[category] || {
     label: category,
@@ -34,8 +37,14 @@ export function NewsCard({
   return (
     <Link
       href={`/news/${id}`}
-      className="group flex flex-col overflow-hidden rounded-[15px] border border-[var(--border-green)] bg-white transition-shadow hover:shadow-lg"
+      className="group relative flex flex-col overflow-hidden rounded-[15px] border border-[var(--border-green)] bg-white transition-shadow hover:shadow-lg"
     >
+      {isPinned && (
+        <div className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full bg-brand-dark px-2 py-0.5 text-xs font-medium text-white">
+          <Pin className="size-3" />
+          Ghim
+        </div>
+      )}
       {/* Thumbnail */}
       <div className="relative aspect-[16/9] overflow-hidden bg-brand-light/30">
         {thumbnail ? (

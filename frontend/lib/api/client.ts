@@ -48,6 +48,12 @@ async function request<T>(
   const data: ApiResponse<T> = await response.json();
 
   // ── 401: attempt silent token refresh then retry once ──────────────────────
+  // Skip retry + redirect if THIS request is the refresh token endpoint itself
+  // (avoids infinite redirect loop when there is no valid refresh token cookie)
+  if (response.status === 401 && endpoint === ENDPOINTS.AUTH.REFRESH_TOKEN) {
+    throw new ApiError(401, data.message || "Phiên đăng nhập đã hết hạn");
+  }
+
   if (response.status === 401 && retry && typeof window !== "undefined") {
     const refreshed = await silentRefresh();
     if (refreshed) {

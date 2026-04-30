@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Shirt, Sparkles, Baby, Watch } from "lucide-react";
 import { fetchPosts } from "@/lib/api/posts";
+import { fetchNewsList } from "@/lib/api/news";
 import { PostCard } from "@/components/posts/PostCard";
 import { CategoryCard } from "@/components/posts/CategoryCard";
 import { SearchBar } from "@/components/ui/SearchBar";
@@ -14,44 +15,21 @@ const CATEGORIES = [
   { slug: "phu_kien", label: "Phụ kiện", icon: <Watch className="size-5" /> },
 ];
 
-/* Mock news data until backend has news API */
-const MOCK_NEWS = [
-  {
-    id: "1",
-    title: "Chương trình tặng đồ mùa đông 2026",
-    thumbnail: "",
-    category: "event",
-    description:
-      "Cùng Lá Lành mang hơi ấm đến với bà con vùng cao trong mùa đông năm nay.",
-    publishedAt: "2026-04-20",
-  },
-  {
-    id: "2",
-    title: "Kinh nghiệm chia sẻ đồ dùng an toàn",
-    thumbnail: "",
-    category: "guide",
-    description:
-      "Những lưu ý quan trọng khi tặng và nhận đồ dùng cũ qua nền tảng.",
-    publishedAt: "2026-04-18",
-  },
-  {
-    id: "3",
-    title: "Câu chuyện của chị Lan — từ người nhận đến người cho",
-    thumbnail: "",
-    category: "story",
-    description:
-      "Hành trình đầy cảm hứng của một thành viên trong cộng đồng Lá Lành.",
-    publishedAt: "2026-04-15",
-  },
-];
-
 export default async function HomePage() {
   let latestPosts: import("@/types/post").Post[] = [];
+  let latestNews: import("@/types/news").NewsPost[] = [];
   try {
     const data = await fetchPosts({ limit: 3 });
     latestPosts = data.posts;
   } catch {
     latestPosts = [];
+  }
+
+  try {
+    const newsData = await fetchNewsList({ limit: 3 });
+    latestNews = newsData.items;
+  } catch {
+    latestNews = [];
   }
 
   return (
@@ -134,9 +112,23 @@ export default async function HomePage() {
         </SectionHeading>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {MOCK_NEWS.map((news) => (
-            <NewsCard key={news.id} {...news} />
+          {latestNews.map((news) => (
+            <NewsCard
+              key={news._id}
+              id={news._id}
+              title={news.title}
+              thumbnail={news.thumbnail}
+              category={news.category}
+              description={news.content.slice(0, 120)}
+              publishedAt={news.publishedAt ?? news.createdAt}
+              isPinned={news.isPinned}
+            />
           ))}
+          {latestNews.length === 0 && (
+            <p className="col-span-3 py-8 text-center text-sm text-muted-foreground">
+              Chưa có bài bản tin nào.
+            </p>
+          )}
         </div>
       </section>
     </div>

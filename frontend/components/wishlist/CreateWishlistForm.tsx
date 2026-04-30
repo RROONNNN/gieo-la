@@ -8,8 +8,7 @@ import { createWishlist } from "@/lib/api/wishlist";
 import { ENDPOINTS, BASE_URL } from "@/lib/api/endpoints";
 import { CATEGORY_LABEL } from "@/lib/postLabels";
 import type { PostCategory } from "@/types/enums";
-
-const TOKEN_KEY = "la_lanh_token";
+import { getAccessToken } from "@/lib/api/client";
 const CATEGORIES = Object.entries(CATEGORY_LABEL) as [PostCategory, string][];
 
 export function CreateWishlistForm() {
@@ -41,7 +40,7 @@ export function CreateWishlistForm() {
     const index = images.length;
     setUploadingIndex(index);
     try {
-      const token = localStorage.getItem(TOKEN_KEY);
+      const token = getAccessToken();
       const data = new FormData();
       data.append("image", file);
       const res = await fetch(`${BASE_URL}${ENDPOINTS.UPLOAD.IMAGE}`, {

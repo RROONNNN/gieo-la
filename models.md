@@ -63,7 +63,7 @@
 |---|---|---|
 | _id | ObjectId | auto |
 | actorId | ObjectId | ref: User, default: null (null = system) |
-| targetType | String | required, enum: User / Post / VerificationRequest / AuditLog / System |
+| targetType | String | required, enum: User / Post / VerificationRequest / AuditLog / System / NewsPost |
 | targetId | ObjectId | default: null |
 | action | String | required (e.g. 'user.ban', 'verification.approve') |
 | metadata | Mixed | default: {} |
@@ -219,3 +219,27 @@
 
 **Indexes:** `{ conversationId: 1, createdAt: -1 }`
 **Relations:** conversationId → Conversation, sender → User
+
+---
+
+## NewsPost (`newsposts`)
+
+| Field | Type | Constraints |
+|---|---|---|
+| _id | ObjectId | auto |
+| title | String | required, trim, 5-200 chars |
+| thumbnail | String | required (Cloudinary URL) |
+| content | String | required (Markdown string) |
+| category | String | required, enum: announcement / story / guide / event |
+| status | String | enum: draft / published / hidden, default: draft |
+| publishedAt | Date | default: null (auto-set on first publish) |
+| author | ObjectId | required, ref: User |
+| isPinned | Boolean | default: false |
+| createdAt | Date | auto (timestamps) |
+| updatedAt | Date | auto (timestamps) |
+
+**Indexes:**
+- `{ status: 1, isPinned: -1, publishedAt: -1 }` (public listing)
+- `{ category: 1, status: 1 }` (category filter)
+
+**Relations:** author → User (Admin account)

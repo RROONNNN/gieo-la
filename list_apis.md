@@ -117,6 +117,24 @@
 | PATCH | /api/v1/chat/conversations/:id/read | Authenticated | Mark conversation as read (reset unreadCount to 0) |
 | POST | /api/v1/chat/upload | Authenticated | Upload a chat file (image ≤20MB, video ≤50MB, doc/zip ≤20MB); returns `{ url, fileName, fileSize, fileMimeType }` |
 
+## 14) News (Bản tin) APIs
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | /api/v1/news | Public | List published news posts (filter: category, pagination; pinned first) |
+| GET | /api/v1/news/:id | Public | Get single published news post detail |
+
+## 15) Admin News APIs
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | /api/v1/admin/news | Admin | List all news posts (any status, filter: category, status, pagination) |
+| GET | /api/v1/admin/news/:id | Admin | Get a single news post by ID (any status) |
+| POST | /api/v1/admin/news | Admin | Create a new news post (auto-sets publishedAt when status=published) |
+| PATCH | /api/v1/admin/news/:id | Admin | Update a news post (status, content, etc.) |
+| DELETE | /api/v1/admin/news/:id | Admin | Delete a news post |
+| PATCH | /api/v1/admin/news/:id/toggle-pin | Admin | Toggle isPinned on a news post |
+
 ## Notes
 
 - All endpoints under `/api/v1/*` are mounted from backend router.

@@ -1,13 +1,6 @@
-import { apiClient } from "./client";
+import { apiClient, getAccessToken } from "./client";
 import { ENDPOINTS, BASE_URL } from "./endpoints";
 import type { Conversation, ChatMessage } from "@/types/chat";
-
-const TOKEN_KEY = "la_lanh_token";
-
-function getAuthToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(TOKEN_KEY);
-}
 
 export async function getConversations(): Promise<Conversation[]> {
   const data = await apiClient.get<{ conversations: Conversation[] }>(
@@ -53,7 +46,7 @@ export interface UploadedFile {
 }
 
 export async function uploadChatFile(file: File): Promise<UploadedFile> {
-  const token = getAuthToken();
+  const token = getAccessToken();
   const formData = new FormData();
   formData.append("file", file);
 

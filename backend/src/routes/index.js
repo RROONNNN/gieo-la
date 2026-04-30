@@ -13,6 +13,8 @@ const commentRouter         = require('./commentRoutes');
 const leaderboardRouter     = require('./leaderboardRoutes');
 const wishlistRouter        = require('./wishlistRoutes');
 const chatRouter            = require('./chatRoutes');
+const newsRouter            = require('./newsRoutes');
+const adminNewsRouter       = require('./adminNewsRoutes');
 
 const router = Router();
 
@@ -34,5 +36,7 @@ router.use('/posts/:postId/comments', commentRouter);
 router.use('/leaderboard', leaderboardRouter);
 router.use('/wishlist', wishlistRouter);
 router.use('/chat', chatRouter);
+router.use('/news', newsRouter);
+router.use('/admin/news', adminNewsRouter);
 
 module.exports = router;

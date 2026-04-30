@@ -12,7 +12,7 @@ const auditLogSchema = new mongoose.Schema(
     // What was acted upon
     targetType: {
       type: String,
-      enum: ['User', 'Post', 'VerificationRequest', 'AuditLog', 'System'],
+      enum: ['User', 'Post', 'VerificationRequest', 'AuditLog', 'System', 'NewsPost'],
       required: true,
     },
     targetId: {

@@ -71,5 +71,15 @@ export const ENDPOINTS = {
     CONVERSATION_READ: (id: string) => `${API_BASE}/chat/conversations/${id}/read`,
     UPLOAD: `${API_BASE}/chat/upload`,
   },
+  NEWS: {
+    LIST: `${API_BASE}/news`,
+    DETAIL: (id: string) => `${API_BASE}/news/${id}`,
+    ADMIN_LIST: `${API_BASE}/admin/news`,
+    ADMIN_GET: (id: string) => `${API_BASE}/admin/news/${id}`,
+    ADMIN_CREATE: `${API_BASE}/admin/news`,
+    ADMIN_UPDATE: (id: string) => `${API_BASE}/admin/news/${id}`,
+    ADMIN_DELETE: (id: string) => `${API_BASE}/admin/news/${id}`,
+    ADMIN_TOGGLE_PIN: (id: string) => `${API_BASE}/admin/news/${id}/toggle-pin`,
+  },
 } as const;
 export { BASE_URL };

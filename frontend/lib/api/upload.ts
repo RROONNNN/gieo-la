@@ -1,12 +1,6 @@
 import { ENDPOINTS } from "./endpoints";
 import { BASE_URL } from "./endpoints";
-
-const TOKEN_KEY = "la_lanh_token";
-
-function getAuthToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(TOKEN_KEY);
-}
+import { getAccessToken } from "./client";
 
 /**
  * Uploads a single image file to the server.
@@ -14,7 +8,7 @@ function getAuthToken(): string | null {
  * Throws an Error with a Vietnamese message on failure.
  */
 export async function uploadImage(file: File): Promise<string> {
-  const token = getAuthToken();
+  const token = getAccessToken();
   const formData = new FormData();
   formData.append("image", file);
 
@@ -41,7 +35,7 @@ export async function uploadImage(file: File): Promise<string> {
 export async function uploadFiles(files: File[]): Promise<string[]> {
   return Promise.all(
     files.map(async (file) => {
-      const token = getAuthToken();
+      const token = getAccessToken();
       const formData = new FormData();
       formData.append("file", file);
 

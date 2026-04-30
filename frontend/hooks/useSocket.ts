@@ -1,9 +1,8 @@
 "use client";
 
+import { getAccessToken } from "@/lib/api/client";
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
-
-const TOKEN_KEY = "la_lanh_token";
 
 const SOCKET_URL =
   process.env.NEXT_PUBLIC_SOCKET_URL ||
@@ -17,8 +16,7 @@ export function useSocket(isAuthenticated: boolean) {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
+    const token = getAccessToken() ;
     if (!token) return;
 
     const socket = io(SOCKET_URL, {
