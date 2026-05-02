@@ -80,8 +80,17 @@
 | GET | /api/v1/admin/posts | Admin | List all posts with admin filters |
 | PATCH | /api/v1/admin/posts/:id/complete | Admin | Mark post as completed (traded → completed; increments completedDonations) |
 | DELETE | /api/v1/admin/posts/:id | Admin | Admin-delete a post |
-| PATCH | /api/v1/admin/posts/:id/toggle-pin | Admin | Toggle pin status of a post |
-| PATCH | /api/v1/admin/posts/wishlist/:id/pin | Admin | Toggle pin status of a wishlist post |
+| PATCH | /api/v1/admin/posts/:id/pin | Admin | Toggle pin status of a post |
+| PATCH | /api/v1/admin/posts/:id/status | Admin | Update post status |
+
+## 10) Admin Wishlist Management APIs
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | /api/v1/admin/wishlist | Admin | List all wishlist posts with filters (category, status, search, dateFrom, dateTo, page, limit) |
+| PATCH | /api/v1/admin/wishlist/:id/pin | Admin | Toggle pin status of a wishlist post |
+| PATCH | /api/v1/admin/wishlist/:id/status | Admin | Update wishlist status (open / fulfilled) |
+| DELETE | /api/v1/admin/wishlist/:id | Admin | Admin-delete a wishlist post |
 
 ## 11) Leaderboard APIs
 

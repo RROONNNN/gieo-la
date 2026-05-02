@@ -6,7 +6,6 @@ import {
   Users,
   FileText,
   Heart,
-  Trophy,
   Newspaper,
   LayoutDashboard,
   ShieldCheck,
@@ -19,6 +18,7 @@ const ADMIN_NAV = [
   { href: "/admin", label: "Tổng quan", icon: LayoutDashboard, exact: true },
   { href: "/admin/users", label: "Người dùng", icon: Users },
   { href: "/admin/posts", label: "Bài đăng", icon: FileText },
+  { href: "/admin/wishlist", label: "Wishlist", icon: Heart },
   { href: "/admin/verifications", label: "Xác thực", icon: ShieldCheck },
   { href: "/admin/news", label: "Bản tin", icon: Newspaper },
 ];

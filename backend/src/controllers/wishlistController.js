@@ -2,9 +2,12 @@
 
 const Wishlist = require('../models/Wishlist');
 const AuditLog = require('../models/AuditLog');
+const User = require('../models/User');
+const removeAccents = require('remove-accents');
 const {
   createWishlistSchema,
   listWishlistQuerySchema,
+  adminListWishlistQuerySchema,
 } = require('../validators/wishlistValidators');
 
 const logAudit = (actorId, targetType, targetId, action, metadata, req) =>
@@ -174,6 +177,111 @@ const adminToggleWishlistPin = async (req, res) => {
   });
 };
 
+/**
+ * GET /api/v1/admin/wishlist
+ * Admin — list all wishlist posts with advanced filters.
+ */
+const adminListWishlist = async (req, res) => {
+  const parsed = adminListWishlistQuerySchema.safeParse(req.query);
+  if (!parsed.success) {
+    return res.status(400).json({
+      success: false,
+      message: 'Tham số truy vấn không hợp lệ',
+      errors: parsed.error.errors,
+    });
+  }
+
+  const { category, status, search, dateFrom, dateTo, page, limit } = parsed.data;
+  const filter = {};
+
+  if (category) filter.category = category;
+  if (status) filter.status = status;
+
+  if (search) {
+    const normalizedSearch = removeAccents(search);
+    const matchingUsers = await User.find({
+      $or: [
+        { name: { $regex: normalizedSearch, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+      ],
+    }).select('_id');
+
+    filter.$or = [
+      { title: { $regex: normalizedSearch, $options: 'i' } },
+      ...(matchingUsers.length > 0 ? [{ author: { $in: matchingUsers.map((u) => u._id) } }] : []),
+    ];
+  }
+
+  if (dateFrom || dateTo) {
+    filter.createdAt = {};
+    if (dateFrom) filter.createdAt.$gte = new Date(dateFrom);
+    if (dateTo) filter.createdAt.$lte = new Date(`${dateTo}T23:59:59.999Z`);
+  }
+
+  const skip = (page - 1) * limit;
+
+  const [items, total] = await Promise.all([
+    Wishlist.find(filter)
+      .populate('author', 'name email avatar role verificationStatus ngoProfile.organizationName')
+      .sort({ isPinned: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Wishlist.countDocuments(filter),
+  ]);
+
+  return res.json({
+    success: true,
+    data: { items, total, page, limit },
+  });
+};
+
+/**
+ * PATCH /api/v1/admin/wishlist/:id/status
+ * Admin — update wishlist status (open / fulfilled).
+ */
+const adminUpdateWishlistStatus = async (req, res) => {
+  const { status } = req.body;
+  if (!['open', 'fulfilled'].includes(status)) {
+    return res.status(400).json({ success: false, message: 'Trạng thái không hợp lệ' });
+  }
+
+  const item = await Wishlist.findById(req.params.id);
+  if (!item) {
+    return res.status(404).json({ success: false, message: 'Không tìm thấy wishlist' });
+  }
+
+  const prevStatus = item.status;
+  item.status = status;
+  await item.save();
+
+  await logAudit(
+    req.user._id, 'Wishlist', item._id,
+    'wishlist.status_update', { prevStatus, newStatus: status }, req
+  );
+
+  return res.json({
+    success: true,
+    message: 'Đã cập nhật trạng thái wishlist',
+    data: { item },
+  });
+};
+
+/**
+ * DELETE /api/v1/admin/wishlist/:id
+ * Admin — delete any wishlist post with audit log.
+ */
+const adminDeleteWishlist = async (req, res) => {
+  const item = await Wishlist.findById(req.params.id);
+  if (!item) {
+    return res.status(404).json({ success: false, message: 'Không tìm thấy wishlist' });
+  }
+
+  await logAudit(req.user._id, 'Wishlist', item._id, 'wishlist.delete', {}, req);
+  await item.deleteOne();
+
+  return res.json({ success: true, message: 'Đã xóa wishlist' });
+};
+
 module.exports = {
   listWishlist,
   getWishlist,
@@ -181,4 +289,7 @@ module.exports = {
   deleteWishlist,
   toggleLike,
   adminToggleWishlistPin,
+  adminListWishlist,
+  adminUpdateWishlistStatus,
+  adminDeleteWishlist,
 };

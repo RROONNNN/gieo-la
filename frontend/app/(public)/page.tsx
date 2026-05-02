@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Shirt, Sparkles, Baby, Watch } from "lucide-react";
 import { fetchPosts } from "@/lib/api/posts";
@@ -9,10 +10,30 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { NewsCard } from "@/components/news/NewsCard";
 
 const CATEGORIES = [
-  { slug: "do_nam", label: "Đồ Nam", icon: <Shirt className="size-6" /> },
-  { slug: "do_nu", label: "Đồ Nữ", icon: <Sparkles className="size-6" /> },
-  { slug: "do_tre_em", label: "Đồ Trẻ em", icon: <Baby className="size-6" /> },
-  { slug: "phu_kien", label: "Phụ kiện", icon: <Watch className="size-5" /> },
+  {
+    slug: "do_nam",
+    label: "Đồ Nam",
+    icon: <Shirt className="size-6" />,
+    image: "/categories/do_nam.jpg",
+  },
+  {
+    slug: "do_nu",
+    label: "Đồ Nữ",
+    icon: <Sparkles className="size-6" />,
+    image: "/categories/do_nu.jpg",
+  },
+  {
+    slug: "do_tre_em",
+    label: "Đồ Trẻ em",
+    icon: <Baby className="size-6" />,
+    image: "/categories/do_tre_em.jpg",
+  },
+  {
+    slug: "phu_kien",
+    label: "Phụ kiện",
+    icon: <Watch className="size-5" />,
+    image: "/categories/phu_kien.jpg",
+  },
 ];
 
 export default async function HomePage() {
@@ -29,6 +50,7 @@ export default async function HomePage() {
     const newsData = await fetchNewsList({ limit: 3 });
     latestNews = newsData.items;
   } catch {
+    s;
     latestNews = [];
   }
 
@@ -36,16 +58,23 @@ export default async function HomePage() {
     <div className="flex flex-col gap-24 py-20">
       {/* ─── Hero Section ─── */}
       <section className="relative min-h-[500px] overflow-hidden rounded-[24px] bg-brand-dark px-8 py-20 sm:px-16">
-        {/* Overlay image placeholder */}
-        <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-center mix-blend-overlay opacity-30" />
+        <Image
+          src="/hero-image.jpg"
+          alt="Hero background"
+          fill
+          className="object-cover mix-blend-overlay opacity-50"
+          priority
+        />
 
         <div className="relative z-10 flex max-w-[672px] flex-col gap-8">
           <h1 className="font-heading text-5xl font-bold leading-tight text-white tracking-tight">
             Lá lành đùm lá rách
           </h1>
           <p className="max-w-[576px] text-lg leading-relaxed text-brand-muted">
-            Nurturing altruism through community sharing. Find what you need,
-            give what you can. Together, we weave a stronger thread of support.
+            "Lá Lành là nền tảng chia sẻ cộng đồng, nơi bạn có thể trao đi những
+            món đồ không còn dùng đến và tìm về những thứ mình đang cần — vì
+            chúng tôi tin rằng, mỗi hành động nhỏ từ trái tim đều có thể thắp
+            sáng cuộc đời ai đó."
           </p>
           <SearchBar className="max-w-[512px]" />
         </div>
@@ -61,6 +90,7 @@ export default async function HomePage() {
               slug={cat.slug}
               label={cat.label}
               icon={cat.icon}
+              image={cat.image}
             />
           ))}
         </div>

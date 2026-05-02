@@ -1,13 +1,13 @@
 import Link from "next/link";
 
-const FOOTER_LINKS = [
-  { href: "/privacy", label: "Privacy Policy" },
-  { href: "/terms", label: "Terms of Service" },
-  { href: "/partners", label: "Partner NGOs" },
-  { href: "/contact", label: "Contact Us" },
-];
+// const FOOTER_LINKS = [
+//   { href: "/privacy", label: "Privacy Policy" },
+//   { href: "/terms", label: "Terms of Service" },
+//   { href: "/partners", label: "Partner NGOs" },
+//   { href: "/contact", label: "Contact Us" },
+// ];
 
-const NGO_LOGOS = ["UNICEF", "Red Cross", "Oxfam", "Save the Children"];
+// const NGO_LOGOS = ["UNICEF", "Red Cross", "Oxfam", "Save the Children"];
 
 export function Footer() {
   return (
@@ -22,12 +22,12 @@ export function Footer() {
             Lá Lành
           </Link>
           <p className="mt-2 text-sm text-muted-foreground">
-            Nurturing altruism through community sharing
+Chung tay sẻ chia — Cùng nhau vươn lên
           </p>
         </div>
 
         {/* NGO logos */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-8">
+        {/* <div className="mt-8 flex flex-wrap items-center justify-center gap-8">
           {NGO_LOGOS.map((name) => (
             <span
               key={name}
@@ -36,10 +36,10 @@ export function Footer() {
               {name}
             </span>
           ))}
-        </div>
+        </div> */}
 
         {/* Links */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
+        {/* <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
           {FOOTER_LINKS.map((link) => (
             <Link
               key={link.href}
@@ -49,11 +49,11 @@ export function Footer() {
               {link.label}
             </Link>
           ))}
-        </div>
+        </div> */}
 
         {/* Copyright */}
         <p className="mt-8 text-center text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} Lá Lành. All rights reserved.
+          &copy; {new Date().getFullYear()} 
         </p>
       </div>
     </footer>
