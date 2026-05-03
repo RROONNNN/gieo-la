@@ -8,6 +8,6 @@ const connectDB = require('./config/db');
 connectDB().then(() => {
   initSocket(server);
   server.listen(env.PORT, () => {
-    console.log(`🌿 Server đang chạy tại http://localhost:${env.PORT}`);
+    console.log(`🌿 Server đang chạy tại ${env.CLIENT_URL}`);
   });
 });
