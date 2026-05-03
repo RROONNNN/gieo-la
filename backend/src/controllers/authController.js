@@ -40,10 +40,11 @@ const safeUser = (user) => ({
 
 /** Set httpOnly refresh token cookie on the response */
 const setRefreshCookie = (res, token) => {
+  const isProd = process.env.NODE_ENV === 'production';
   res.cookie(REFRESH_TOKEN_COOKIE, token, {
     httpOnly: true,
-    secure:   process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure:   isProd,
+    sameSite: isProd ? 'none' : 'lax',
     maxAge:   REFRESH_TOKEN_MAX_AGE,
     path:     '/',
   });
@@ -51,7 +52,13 @@ const setRefreshCookie = (res, token) => {
 
 /** Clear refresh token cookie */
 const clearRefreshCookie = (res) => {
-  res.clearCookie(REFRESH_TOKEN_COOKIE, { httpOnly: true, sameSite: 'lax', path: '/' });
+  const isProd = process.env.NODE_ENV === 'production';
+  res.clearCookie(REFRESH_TOKEN_COOKIE, {
+    httpOnly: true,
+    secure:   isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    path:     '/',
+  });
 };
 
 /** Issue both tokens, persist hash, set cookie, return access token + user */

@@ -15,7 +15,18 @@ const app = express();
 
 // ── Security middleware ───────────────────────
 app.use(helmet());
-app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
+app.use(cors({
+  origin: env.CLIENT_URL,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+app.options('*', cors({
+  origin: env.CLIENT_URL,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 
 // ── Request logging ───────────────────────────
 app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
