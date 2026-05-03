@@ -30,6 +30,7 @@ const messageSchema = new mongoose.Schema(
     fileSize: { type: Number, default: null },
     fileMimeType: { type: String, default: null },
     isSystem: { type: Boolean, default: false },
+    metadata: { type: mongoose.Schema.Types.Mixed, default: null },
   },
   { timestamps: true }
 );

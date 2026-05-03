@@ -38,10 +38,11 @@ const listPosts = async (req, res) => {
     });
   }
 
-  const { category, status, search, mine, page, limit } = parsed.data;
+  const { category, status, search, city, mine, page, limit } = parsed.data;
   const filter = {};
 
   if (category) filter.category = category;
+  if (city) filter['location.city'] = city;
 
   if (mine && req.user) {
     // Authenticated owner: show all own posts regardless of status
@@ -293,6 +294,19 @@ const adminDeletePost = async (req, res) => {
 };
 
 /**
+ * GET /api/v1/admin/posts/stats
+ * Returns aggregate stats for the admin dashboard (e.g. today's post count).
+ */
+const adminGetPostsStats = async (req, res) => {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const todayCount = await Post.countDocuments({ createdAt: { $gte: startOfToday } });
+
+  return res.json({ success: true, data: { todayCount } });
+};
+
+/**
  * PATCH /api/v1/admin/posts/:id/pin
  * Admin pins/unpins a post.
  */
@@ -470,5 +484,6 @@ module.exports = {
   adminDeletePost,
   adminTogglePin,
   adminListPosts,
+  adminGetPostsStats,
   toggleLikePost,
 };

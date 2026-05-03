@@ -15,6 +15,7 @@ export interface ChatMessage {
   fileSize: number | null;
   fileMimeType: string | null;
   isSystem: boolean;
+  metadata?: { postId?: string } | null;
   createdAt: string;
 }
 

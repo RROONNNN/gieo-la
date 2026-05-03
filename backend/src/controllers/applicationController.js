@@ -254,6 +254,7 @@ const selectApplicant = async (req, res) => {
       type: 'text',
       content: systemText,
       isSystem: true,
+      metadata: { postId: post._id.toString() },
     });
 
     conv.lastMessage = { content: systemText, type: 'text', senderId: null, createdAt: msg.createdAt };

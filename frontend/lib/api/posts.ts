@@ -12,6 +12,7 @@ export interface ListPostsParams {
   category?: PostCategory;
   status?: PostStatus;
   search?: string;
+  city?: string;
   mine?: boolean;
   page?: number;
   limit?: number;
@@ -27,6 +28,7 @@ export async function fetchPosts(
   if (params.category) query.set("category", params.category);
   if (params.status) query.set("status", params.status);
   if (params.search) query.set("search", params.search);
+  if (params.city) query.set("city", params.city);
   if (params.mine) query.set("mine", "true");
   if (params.page) query.set("page", String(params.page));
   if (params.limit) query.set("limit", String(params.limit));

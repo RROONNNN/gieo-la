@@ -2,6 +2,7 @@ import "server-only";
 
 import type { AdminUserSummary } from "./admin";
 import { serverApiData } from "./serverRequest";
+import { ENDPOINTS } from "./endpoints";
 
 export interface ListUsersParams {
   role?: string;
@@ -44,4 +45,14 @@ export async function getAdminUser(
     options,
   );
   return data.user;
+}
+
+export interface AdminPostsStats {
+  todayCount: number;
+}
+
+export async function getAdminPostsStats(
+  options: RequestInit = {},
+): Promise<AdminPostsStats> {
+  return serverApiData<AdminPostsStats>(ENDPOINTS.ADMIN_POSTS.STATS, options);
 }

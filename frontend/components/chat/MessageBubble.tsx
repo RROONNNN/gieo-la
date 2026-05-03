@@ -1,8 +1,9 @@
 "use client";
 
-import { Download, FileText } from "lucide-react";
+import { Download, FileText, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@/types/chat";
 
@@ -21,13 +22,24 @@ function formatFileSize(bytes: number | null): string {
 export function MessageBubble({ message, isOwn }: MessageBubbleProps) {
   const timeStr = format(new Date(message.createdAt), "HH:mm", { locale: vi });
 
-  // System message — centered italic
+  // System message — centered italic, optionally linking to a post
   if (message.isSystem) {
+    const postId = message.metadata?.postId;
     return (
       <div className="flex justify-center my-2">
-        <span className="text-xs text-gray-500 italic bg-gray-100 rounded-[15px] px-3 py-1 max-w-xs text-center">
-          {message.content}
-        </span>
+        {postId ? (
+          <Link
+            href={`/posts/${postId}`}
+            className="group flex items-center gap-1.5 text-xs text-brand-dark italic bg-brand-light/40 border border-brand-light rounded-[15px] px-3 py-1.5 max-w-xs text-center hover:bg-brand-light/70 transition-colors"
+          >
+            <span>{message.content}</span>
+            <ExternalLink className="w-3 h-3 flex-shrink-0 opacity-60 group-hover:opacity-100" />
+          </Link>
+        ) : (
+          <span className="text-xs text-gray-500 italic bg-gray-100 rounded-[15px] px-3 py-1 max-w-xs text-center">
+            {message.content}
+          </span>
+        )}
       </div>
     );
   }

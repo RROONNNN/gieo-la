@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { getProvinces } from "@/lib/data/vnLocations";
 
 const CATEGORIES = [
   { key: "do_nam", label: "Đồ Nam" },
@@ -16,6 +17,8 @@ const STATUSES = [
   { key: "traded", label: "Đã giao dịch" },
   { key: "completed", label: "Hoàn thành" },
 ];
+
+const PROVINCES = getProvinces();
 
 interface PostFiltersProps {
   currentCategory?: string;
@@ -143,9 +146,11 @@ export function PostFilters({
           }
         >
           <option value="all">Tất cả</option>
-          <option value="Hà Nội">Hà Nội</option>
-          <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
-          <option value="Đà Nẵng">Đà Nẵng</option>
+          {PROVINCES.map((p) => (
+            <option key={p.code} value={p.name}>
+              {p.name}
+            </option>
+          ))}
         </select>
       </div>
     </div>

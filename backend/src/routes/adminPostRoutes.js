@@ -5,6 +5,7 @@ const { protect, restrictTo } = require('../middlewares/auth');
 const { USER_ROLES } = require('../constants/userEnums');
 const {
   adminListPosts,
+  adminGetPostsStats,
   adminCompletePost,
   adminDeletePost,
   adminTogglePin,
@@ -15,6 +16,7 @@ const router = Router();
 
 router.use(protect, restrictTo(USER_ROLES.ADMIN));
 
+router.get('/stats', adminGetPostsStats);
 router.get('/', adminListPosts);
 router.patch('/:id/status', adminUpdatePostStatus);
 router.patch('/:id/complete', adminCompletePost);

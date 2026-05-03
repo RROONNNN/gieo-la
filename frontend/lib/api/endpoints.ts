@@ -51,6 +51,7 @@ export const ENDPOINTS = {
   },
   ADMIN_POSTS: {
     LIST: `${API_BASE}/admin/posts`,
+    STATS: `${API_BASE}/admin/posts/stats`,
     COMPLETE: (id: string) => `${API_BASE}/admin/posts/${id}/complete`,
     UPDATE_STATUS: (id: string) => `${API_BASE}/admin/posts/${id}/status`,
     PIN: (id: string) => `${API_BASE}/admin/posts/${id}/pin`,
@@ -62,6 +63,12 @@ export const ENDPOINTS = {
     CREATE: (postId: string) => `${API_BASE}/posts/${postId}/comments`,
     DELETE: (postId: string, commentId: string) =>
       `${API_BASE}/posts/${postId}/comments/${commentId}`,
+  },
+  WISHLIST_COMMENTS: {
+    LIST: (wishlistId: string) => `${API_BASE}/wishlist/${wishlistId}/comments`,
+    CREATE: (wishlistId: string) => `${API_BASE}/wishlist/${wishlistId}/comments`,
+    DELETE: (wishlistId: string, commentId: string) =>
+      `${API_BASE}/wishlist/${wishlistId}/comments/${commentId}`,
   },
   HEALTH: `${API_BASE}/health`,
   USERS: {

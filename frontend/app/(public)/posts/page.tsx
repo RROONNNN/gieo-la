@@ -50,7 +50,7 @@ export default async function PostsPage({ searchParams }: PageProps) {
       posts = data.posts;
       total = data.total;
     } else {
-      const data = await fetchPosts({ category, status, search, page, limit });
+      const data = await fetchPosts({ category, status, search, city, page, limit });
       posts = data.posts;
       total = data.total;
     }

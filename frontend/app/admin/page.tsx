@@ -1,7 +1,7 @@
 import { Users, FileCheck, Shield, TrendingUp } from "lucide-react";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { listAdminUsers } from "@/lib/api/adminUsers";
+import { listAdminUsers, getAdminPostsStats } from "@/lib/api/adminUsers";
 import { adminListRequestsServer } from "@/lib/api/verification.server";
 import { VerificationRequestStatus, VerificationRequestType } from "@/types/enums";
 import Link from "next/link";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 
 export default async function AdminDashboardPage() {
   // Fetch data in parallel
-  const [usersRes, individualRes, ngoRes] = await Promise.all([
+  const [usersRes, individualRes, ngoRes, postsStats] = await Promise.all([
     listAdminUsers({ limit: 1 }).catch(() => ({
       users: [],
       total: 0,
@@ -30,11 +30,13 @@ export default async function AdminDashboardPage() {
         limit: 1,
       },
     ).catch(() => ({ requests: [], total: 0, page: 1, limit: 1 })),
+    getAdminPostsStats().catch(() => ({ todayCount: 0 })),
   ]);
 
   const totalUsers = usersRes.total;
   const pendingIndividual = individualRes.total;
   const pendingNgo = ngoRes.total;
+  const todayPostsCount = postsStats.todayCount;
 
   return (
     <div>
@@ -65,7 +67,7 @@ export default async function AdminDashboardPage() {
         <StatsCard
           icon={<TrendingUp className="size-5" />}
           label="Bài đăng mới hôm nay"
-          value={0}
+          value={todayPostsCount}
         />
       </div>
 

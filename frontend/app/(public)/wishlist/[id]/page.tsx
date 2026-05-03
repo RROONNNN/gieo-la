@@ -2,9 +2,11 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight, Package, Tag } from "lucide-react";
 import { fetchWishlistItem } from "@/lib/api/wishlist";
+import { fetchWishlistComments } from "@/lib/api/wishlistComments";
 import { getCurrentUserFromCookie } from "@/lib/auth/server";
 import { LikeButton } from "@/components/wishlist/LikeButton";
 import { WishlistOwnerActions } from "@/components/wishlist/WishlistOwnerActions";
+import { WishlistCommentSection } from "@/components/wishlist/WishlistCommentSection";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { CATEGORY_LABEL } from "@/lib/postLabels";
@@ -29,7 +31,11 @@ export default async function WishlistDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const viewer = await getCurrentUserFromCookie();
+  const [viewer, initialComments] = await Promise.all([
+    getCurrentUserFromCookie(),
+    fetchWishlistComments(id).catch(() => []),
+  ]);
+
   const author = item.author;
   const isOwn = viewer !== null && viewer._id === author._id;
   const isAdmin = viewer?.role === "admin";
@@ -152,6 +158,12 @@ export default async function WishlistDetailPage({ params }: PageProps) {
           </div>
         </div>
       </div>
+
+      {/* Comments */}
+      <WishlistCommentSection
+        wishlistId={item._id}
+        initialComments={initialComments}
+      />
     </div>
   );
 }
