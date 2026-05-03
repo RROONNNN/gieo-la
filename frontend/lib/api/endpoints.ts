@@ -31,7 +31,7 @@ export const ENDPOINTS = {
     LIKE: (id: string) => `${API_BASE}/posts/${id}/like`,
   },
   LEADERBOARD: {
-    MONTHLY: `${API_BASE}/leaderboard`,
+    WEEKLY: `${API_BASE}/leaderboard`,
   },
   WISHLIST: {
     LIST: `${API_BASE}/wishlist`,
@@ -39,6 +39,7 @@ export const ENDPOINTS = {
     CREATE: `${API_BASE}/wishlist`,
     DELETE: (id: string) => `${API_BASE}/wishlist/${id}`,
     LIKE: (id: string) => `${API_BASE}/wishlist/${id}/like`,
+    UPDATE_STATUS: (id: string) => `${API_BASE}/wishlist/${id}/status`,
   },
   APPLICATIONS: {
     LIST: (postId: string) => `${API_BASE}/applications/${postId}`,
@@ -55,12 +56,7 @@ export const ENDPOINTS = {
     PIN: (id: string) => `${API_BASE}/admin/posts/${id}/pin`,
     DELETE: (id: string) => `${API_BASE}/admin/posts/${id}`,
   },
-  ADMIN_WISHLIST: {
-    LIST: `${API_BASE}/admin/wishlist`,
-    PIN: (id: string) => `${API_BASE}/admin/wishlist/${id}/pin`,
-    UPDATE_STATUS: (id: string) => `${API_BASE}/admin/wishlist/${id}/status`,
-    DELETE: (id: string) => `${API_BASE}/admin/wishlist/${id}`,
-  },
+
   COMMENTS: {
     LIST: (postId: string) => `${API_BASE}/posts/${postId}/comments`,
     CREATE: (postId: string) => `${API_BASE}/posts/${postId}/comments`,

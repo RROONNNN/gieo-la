@@ -9,11 +9,11 @@ const leaderboardQuerySchema = z.object({
     .min(1900)
     .max(2100)
     .optional(),
-  month: z.coerce
+  week: z.coerce
     .number()
     .int()
     .min(1)
-    .max(12)
+    .max(53)
     .optional(),
 });
 

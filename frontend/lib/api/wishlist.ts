@@ -58,6 +58,10 @@ export function deleteWishlist(id: string) {
   return apiClient.delete(ENDPOINTS.WISHLIST.DELETE(id));
 }
 
+export function toggleWishlistStatus(id: string) {
+  return apiClient.patch<{ item: WishlistPost }>(ENDPOINTS.WISHLIST.UPDATE_STATUS(id), {});
+}
+
 export function toggleLikeWishlist(id: string) {
   return apiClient.post<{ liked: boolean; likesCount: number }>(
     ENDPOINTS.WISHLIST.LIKE(id),

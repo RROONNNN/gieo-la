@@ -71,6 +71,19 @@ const createUser = async (payload) => {
   return User.create({ ...payload, passwordHash, password: undefined });
 };
 
+// ── Shared: check uniqueness of email / phone before creating ─────────────────
+const checkIdentifierUniqueness = async (res, { email, phone }) => {
+  if (email && await User.exists({ email })) {
+    res.status(409).json({ success: false, message: 'Email đã được sử dụng' });
+    return false;
+  }
+  if (phone && await User.exists({ 'contact.phone': phone })) {
+    res.status(409).json({ success: false, message: 'Số điện thoại đã được sử dụng' });
+    return false;
+  }
+  return true;
+};
+
 // ── REGISTER: Member ──────────────────────────────────────────────────────────
 const registerMember = async (req, res) => {
   const parsed = registerMemberSchema.safeParse(req.body);
@@ -82,16 +95,15 @@ const registerMember = async (req, res) => {
     });
   }
 
-  const { name, email, password } = parsed.data;
+  const { name, email, phone, password } = parsed.data;
 
-  if (await User.exists({ email })) {
-    return res.status(409).json({ success: false, message: 'Email đã được sử dụng' });
-  }
+  if (!await checkIdentifierUniqueness(res, { email, phone })) return;
 
   const user = await createUser({
     name,
-    email,
+    email:    email || null,
     password,
+    contact:  phone ? { phone } : undefined,
     role:               USER_ROLES.MEMBER,
     accountStatus:      ACCOUNT_STATUSES.ACTIVE,
     verificationStatus: VERIFICATION_STATUSES.VERIFIED,
@@ -117,16 +129,15 @@ const registerNgo = async (req, res) => {
     });
   }
 
-  const { name, email, password, organizationName, website, description } = parsed.data;
+  const { name, email, phone, password, organizationName, website, description } = parsed.data;
 
-  if (await User.exists({ email })) {
-    return res.status(409).json({ success: false, message: 'Email đã được sử dụng' });
-  }
+  if (!await checkIdentifierUniqueness(res, { email, phone })) return;
 
   const user = await createUser({
     name,
-    email,
+    email:    email || null,
     password,
+    contact:  phone ? { phone } : undefined,
     role:               USER_ROLES.NGO,
     accountStatus:      ACCOUNT_STATUSES.ACTIVE,
     verificationStatus: VERIFICATION_STATUSES.UNVERIFIED,
@@ -153,16 +164,15 @@ const registerIndividual = async (req, res) => {
     });
   }
 
-  const { name, email, password } = parsed.data;
+  const { name, email, phone, password } = parsed.data;
 
-  if (await User.exists({ email })) {
-    return res.status(409).json({ success: false, message: 'Email đã được sử dụng' });
-  }
+  if (!await checkIdentifierUniqueness(res, { email, phone })) return;
 
   const user = await createUser({
     name,
-    email,
+    email:    email || null,
     password,
+    contact:  phone ? { phone } : undefined,
     role:               USER_ROLES.INDIVIDUAL,
     accountStatus:      ACCOUNT_STATUSES.ACTIVE,
     verificationStatus: VERIFICATION_STATUSES.UNVERIFIED,
@@ -177,6 +187,9 @@ const registerIndividual = async (req, res) => {
   });
 };
 
+// Detect if a string looks like a phone number (digits, optional leading +)
+const isPhoneNumber = (value) => /^\+?[0-9]{9,15}$/.test(value.replace(/[\s\-()]/g, ''));
+
 // ── LOGIN ─────────────────────────────────────────────────────────────────────
 const login = async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
@@ -188,11 +201,16 @@ const login = async (req, res) => {
     });
   }
 
-  const { email, password } = parsed.data;
+  const { identifier: rawIdentifier, email: emailAlias, password } = parsed.data;
+  const identifier = (rawIdentifier || emailAlias || '').trim();
 
-  const user = await User.findOne({ email }).select('+passwordHash');
+  const query = isPhoneNumber(identifier)
+    ? { 'contact.phone': identifier }
+    : { email: identifier };
+
+  const user = await User.findOne(query).select('+passwordHash');
   if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-    return res.status(401).json({ success: false, message: 'Email hoặc mật khẩu không đúng' });
+    return res.status(401).json({ success: false, message: 'Email/số điện thoại hoặc mật khẩu không đúng' });
   }
 
   if (

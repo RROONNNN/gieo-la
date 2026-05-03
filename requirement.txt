@@ -121,10 +121,10 @@ V. HỆ THỐNG CHAT REAL-TIME
 VI. HỆ THỐNG XẾP HẠNG & GAMIFICATION
 ---------------------------------------
 
-Leaderboard tháng:
-- Reset mỗi tháng, xếp hạng dựa trên số bài đăng đạt status "Hoàn thành" trong tháng đó
+Leaderboard tuần:
+- Reset mỗi tuần (theo ISO week, bắt đầu từ thứ Hai), xếp hạng dựa trên số bài đăng đạt status "Hoàn thành" trong tuần đó
 - Hiển thị Top 10 người dùng tích cực nhất, cập nhật real-time
-- Có trang Leaderboard riêng, vinh danh theo tháng / quý
+- Có trang Leaderboard riêng, vinh danh theo tuần / tháng
 
 Phân bậc huy hiệu (áp dụng theo thứ hạng tháng, reset mỗi tháng):
 
@@ -132,7 +132,7 @@ Phân bậc huy hiệu (áp dụng theo thứ hạng tháng, reset mỗi tháng)
   Top 2 – 5   → Lá Lành Tích Cực   : Huy hiệu Bạc
   Top 6 – 10  → Mầm Lành Năng Nổ   : Huy hiệu Đồng
 
-LƯU Ý: Huy hiệu thay đổi mỗi tháng theo kết quả leaderboard. Không tích lũy vĩnh viễn.
+LƯU Ý: Huy hiệu thay đổi mỗi tuần theo kết quả leaderboard. Không tích lũy vĩnh viễn.
 
 Điều kiện tính điểm:
 - Chỉ bài đăng có status "Hoàn thành" (do Admin set) mới được tính
@@ -199,7 +199,7 @@ XII. GIAO DIỆN CHÍNH (UI/UX Outline)
 - /posts            : Diễn đàn — Danh sách bài đăng, filter danh mục + status, search
 - /posts/[id]       : Chi tiết bài — Ảnh, thông tin đồ, nút "Đăng ký nhận", danh sách đăng ký (private), thread comment/feedback
 - /wishlist         : Wishlist NGO — Danh sách yêu cầu đồ từ các NGO xác thực
-- /leaderboard      : Bảng xếp hạng — Top 10 tháng, lịch sử tháng trước
+- /leaderboard      : Bảng xếp hạng — Top 10 tuần, điều hướng tuần trước / tuần sau
 - /profile/[id]     : Trang cá nhân — Thông tin user, lịch sử bài đăng, huy hiệu
 - /chat             : Hộp thư — Danh sách cuộc hội thoại 1-1
 - /admin            : Dashboard — Toàn bộ chức năng quản trị

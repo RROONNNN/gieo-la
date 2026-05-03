@@ -16,7 +16,6 @@ const NAV_LINKS = [
   { href: "/leaderboard", label: "Bảng xếp hạng" },
 ];
 
-
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -27,7 +26,10 @@ export function Navbar() {
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setDropdownOpen(false);
       }
     }
@@ -41,24 +43,20 @@ export function Navbar() {
     router.push("/");
   }
 
-   function _getNavLinks(role?: UserRole) {
+  function _getNavLinks(role?: UserRole) {
     if (!role || role === UserRole.ADMIN || role === UserRole.NGO) {
-      return [
-        ...NAV_LINKS,
-  { href: "/wishlist", label: "Wishlist" },
-
-      ];
+      return [...NAV_LINKS, { href: "/wishlist", label: "Wishlist" }];
     }
     return NAV_LINKS;
   }
-  
+
   return (
     <nav className="sticky top-0 z-50 bg-brand-dark">
       <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-6 lg:px-[70px]">
         {/* Logo */}
         <Link
           href="/"
-          className="font-heading text-xl font-bold tracking-tight text-white"
+          className="font-heading text-2xl font-bold tracking-tight text-white"
         >
           Lá Lành
         </Link>
@@ -91,7 +89,10 @@ export function Navbar() {
         <div className="flex items-center gap-3">
           {/* Chat icon with unread badge */}
           {isAuthenticated && (
-            <Link href="/chat" className="relative p-1 text-white/80 hover:text-white transition-colors">
+            <Link
+              href="/chat"
+              className="relative p-1 text-white/80 hover:text-white transition-colors"
+            >
               <MessageSquare className="size-5" />
               {totalUnread > 0 && (
                 <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
@@ -108,7 +109,12 @@ export function Navbar() {
               >
                 <User className="size-5" />
                 <span className="hidden sm:inline">{user.name}</span>
-                <ChevronDown className={cn("size-4 transition-transform", dropdownOpen && "rotate-180")} />
+                <ChevronDown
+                  className={cn(
+                    "size-4 transition-transform",
+                    dropdownOpen && "rotate-180",
+                  )}
+                />
               </button>
 
               {dropdownOpen && (

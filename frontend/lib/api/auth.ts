@@ -9,19 +9,22 @@ export interface AuthResponseData {
 }
 
 export interface LoginPayload {
-  email: string;
+  /** Email hoặc số điện thoại */
+  identifier: string;
   password: string;
 }
 
 export interface RegisterMemberPayload {
   name: string;
-  email: string;
+  email?: string;
+  phone?: string;
   password: string;
 }
 
 export interface RegisterNgoPayload {
   name: string;
-  email: string;
+  email?: string;
+  phone?: string;
   password: string;
   organizationName: string;
   website?: string;
@@ -30,7 +33,8 @@ export interface RegisterNgoPayload {
 
 export interface RegisterIndividualPayload {
   name: string;
-  email: string;
+  email?: string;
+  phone?: string;
   password: string;
 }
 

@@ -9,11 +9,13 @@ import type { Conversation, ConversationParticipant } from "@/types/chat";
 import { ConversationList } from "@/components/chat/ConversationList";
 import { MessageThread } from "@/components/chat/MessageThread";
 import { UserProfilePanel } from "@/components/chat/UserProfilePanel";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function ChatPage() {
   const { user, isLoading } = useRequireAuth();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { socket, setActiveConversationId } = useChatContext();
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -24,7 +26,9 @@ export default function ChatPage() {
   // Load conversations
   useEffect(() => {
     if (!user) return;
-    getConversations().then(setConversations).catch(() => {});
+    getConversations()
+      .then(setConversations)
+      .catch(() => {});
   }, [user]);
 
   // Handle ?conv= query param (e.g. coming from profile page)
@@ -41,13 +45,18 @@ export default function ChatPage() {
 
   // Listen for conversation_updated to refresh list
   const handleConversationUpdated = useCallback(
-    (payload: { conversationId: string; lastMessage: unknown; unreadCounts: Record<string, number> }) => {
+    (payload: {
+      conversationId: string;
+      lastMessage: unknown;
+      unreadCounts: Record<string, number>;
+    }) => {
       setConversations((prev) =>
         prev
           .map((conv) => {
             if (conv._id !== payload.conversationId) return conv;
-            const unreadCount =
-              user ? (payload.unreadCounts[user._id] ?? 0) : 0;
+            const unreadCount = user
+              ? (payload.unreadCounts[user._id] ?? 0)
+              : 0;
             return {
               ...conv,
               lastMessage: payload.lastMessage as Conversation["lastMessage"],
@@ -56,7 +65,8 @@ export default function ChatPage() {
             };
           })
           .sort(
-            (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+            (a, b) =>
+              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
           ),
       );
     },
@@ -66,7 +76,9 @@ export default function ChatPage() {
   useEffect(() => {
     if (!socket) return;
     socket.on("conversation_updated", handleConversationUpdated);
-    return () => { socket.off("conversation_updated", handleConversationUpdated); };
+    return () => {
+      socket.off("conversation_updated", handleConversationUpdated);
+    };
   }, [socket, handleConversationUpdated]);
 
   function handleSelectConversation(id: string) {
@@ -79,7 +91,9 @@ export default function ChatPage() {
   }
 
   const activeConversation = conversations.find((c) => c._id === activeId);
-  const otherUser = activeConversation?.participants.find((p) => p._id !== user?._id);
+  const otherUser = activeConversation?.participants.find(
+    (p) => p._id !== user?._id,
+  );
 
   function handleOpenProfile() {
     if (!otherUser) return;
@@ -98,13 +112,24 @@ export default function ChatPage() {
   return (
     <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-[#FDFAF5]">
       {/* Conversation List — fixed width */}
-      <div className="w-80 flex-shrink-0 h-full overflow-hidden">
-        <ConversationList
-          conversations={conversations}
-          activeId={activeId}
-          currentUserId={user?._id ?? ""}
-          onSelect={handleSelectConversation}
-        />
+      <div className="w-80 flex-shrink-0 h-full overflow-hidden flex flex-col">
+        <div className="px-4 pt-4 pb-2 flex-shrink-0">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Quay lại
+          </button>
+        </div>
+        <div className="flex-1 overflow-hidden">
+          <ConversationList
+            conversations={conversations}
+            activeId={activeId}
+            currentUserId={user?._id ?? ""}
+            onSelect={handleSelectConversation}
+          />
+        </div>
       </div>
 
       {/* Message Thread */}

@@ -18,10 +18,9 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: [true, 'Vui lòng nhập email'],
-      unique: true,
       lowercase: true,
       trim: true,
+      default: null,
     },
     passwordHash: {
       type: String,
@@ -60,7 +59,7 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
     contact: {
-      phone: { type: String, default: null },
+      phone: { type: String, default: null, trim: true },
     },
     location: {
       city: { type: String, default: null },
@@ -100,9 +99,24 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-userSchema.index({ email: 1 }, { unique: true });
 userSchema.index({ role: 1, accountStatus: 1 });
 userSchema.index({ verificationStatus: 1, role: 1 });
+// Partial indexes: chỉ index khi giá trị là string (bỏ qua null)
+userSchema.index(
+  { email: 1 },
+  { unique: true, partialFilterExpression: { email: { $type: 'string' } } },
+);
+userSchema.index(
+  { 'contact.phone': 1 },
+  { unique: true, partialFilterExpression: { 'contact.phone': { $type: 'string' } } },
+);
+
+// At least one of email or phone must be set
+userSchema.pre('validate', async function () {
+  if (!this.email && !this.contact?.phone) {
+    this.invalidate('email', 'Vui lòng cung cấp email hoặc số điện thoại');
+  }
+});
 
 const User = mongoose.model('User', userSchema);
 

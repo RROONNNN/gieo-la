@@ -38,6 +38,17 @@
       }
     },
     {
+      "name": "Next.js: attach Chrome (với extensions)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9222,
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/frontend",
+      "sourceMapPathOverrides": {
+        "webpack://_N_E/*": "${webRoot}/*"
+      }
+    },
+    {
       "name": "Next.js: debug full stack",
       "type": "node-terminal",
       "request": "launch",

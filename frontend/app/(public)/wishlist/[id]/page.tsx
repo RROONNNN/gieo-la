@@ -32,6 +32,7 @@ export default async function WishlistDetailPage({ params }: PageProps) {
   const viewer = await getCurrentUserFromCookie();
   const author = item.author;
   const isOwn = viewer !== null && viewer._id === author._id;
+  const isAdmin = viewer?.role === "admin";
   const isAuthenticated = viewer !== null;
   const initialLiked =
     isAuthenticated && item.likes.includes(viewer!._id);
@@ -140,7 +141,14 @@ export default async function WishlistDetailPage({ params }: PageProps) {
               initialLiked={initialLiked}
               isAuthenticated={isAuthenticated}
             />
-            {isOwn && <WishlistOwnerActions wishlistId={item._id} />}
+            {isAuthenticated && (isOwn || isAdmin) && (
+              <WishlistOwnerActions
+                wishlistId={item._id}
+                status={item.status}
+                isOwner={isOwn}
+                isAdmin={isAdmin}
+              />
+            )}
           </div>
         </div>
       </div>

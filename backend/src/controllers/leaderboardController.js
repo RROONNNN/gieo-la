@@ -20,8 +20,43 @@ function getBadgeForRank(rank) {
 }
 
 /**
+ * Returns the ISO week number and ISO year for a given UTC Date.
+ * ISO week year may differ from calendar year (e.g. 31 Dec 2023 → week 1 of 2024).
+ */
+function getISOWeek(date) {
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const dayNum = d.getUTCDay() || 7; // 1=Mon ... 7=Sun
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum); // move to Thursday of the week
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return {
+    isoYear: d.getUTCFullYear(),
+    isoWeek: Math.ceil((((d - yearStart) / 86400000) + 1) / 7),
+  };
+}
+
+/**
+ * Returns the UTC start (Monday 00:00:00.000) and end (Sunday 23:59:59.999)
+ * for the given ISO year + week number.
+ */
+function getISOWeekRange(year, week) {
+  // Jan 4 is always in ISO week 1
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const dayOfWeek = jan4.getUTCDay() || 7; // 1=Mon ... 7=Sun
+  // Monday of week 1
+  const startOfWeek1 = new Date(Date.UTC(year, 0, 4 - dayOfWeek + 1));
+  // Monday of the requested week
+  const startOfWeek = new Date(startOfWeek1);
+  startOfWeek.setUTCDate(startOfWeek1.getUTCDate() + (week - 1) * 7);
+  // Sunday of the requested week
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setUTCDate(startOfWeek.getUTCDate() + 6);
+  endOfWeek.setUTCHours(23, 59, 59, 999);
+  return { startOfWeek, endOfWeek };
+}
+
+/**
  * GET /api/v1/leaderboard
- * Returns top 10 donors for the given month/year (defaults to current UTC month).
+ * Returns top 10 donors for the given ISO week/year (defaults to current UTC week).
  */
 const getLeaderboard = async (req, res) => {
   const parsed = leaderboardQuerySchema.safeParse(req.query);
@@ -34,26 +69,27 @@ const getLeaderboard = async (req, res) => {
   }
 
   const now = new Date();
-  const year = parsed.data.year ?? now.getUTCFullYear();
-  const month = parsed.data.month ?? now.getUTCMonth() + 1;
+  const { isoYear: currentYear, isoWeek: currentWeek } = getISOWeek(now);
 
-  const startOfMonth = new Date(Date.UTC(year, month - 1, 1));
-  const endOfMonth = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+  const year = parsed.data.year ?? currentYear;
+  const week = parsed.data.week ?? currentWeek;
+
+  const { startOfWeek, endOfWeek } = getISOWeekRange(year, week);
 
   const entries = await Post.aggregate([
     {
       $match: {
         status: POST_STATUSES.COMPLETED,
-        completedAt: { $gte: startOfMonth, $lte: endOfMonth },
+        completedAt: { $gte: startOfWeek, $lte: endOfWeek },
       },
     },
     {
       $group: {
         _id: '$author',
-        completedThisMonth: { $sum: 1 },
+        completedThisWeek: { $sum: 1 },
       },
     },
-    { $sort: { completedThisMonth: -1 } },
+    { $sort: { completedThisWeek: -1 } },
     { $limit: 10 },
     {
       $lookup: {
@@ -64,12 +100,12 @@ const getLeaderboard = async (req, res) => {
       },
     },
     {
-      $unwind: { path: '$userDocs', preserveNullAndEmpty: false },
+      $unwind: { path: '$userDocs', preserveNullAndEmptyArrays: false },
     },
     {
       $project: {
         _id: 0,
-        completedThisMonth: 1,
+        completedThisWeek: 1,
         user: {
           _id: '$userDocs._id',
           name: '$userDocs.name',
@@ -89,7 +125,7 @@ const getLeaderboard = async (req, res) => {
 
   return res.json({
     success: true,
-    data: { year, month, entries: result },
+    data: { year, week, entries: result },
   });
 };
 

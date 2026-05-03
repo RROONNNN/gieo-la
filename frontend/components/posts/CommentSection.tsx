@@ -148,7 +148,7 @@ export function CommentSection({ postId, initialComments }: CommentSectionProps)
               key={comment._id}
               className="flex gap-3 rounded-[15px] border border-[var(--border-green)] bg-white p-4"
             >
-              <Avatar src={comment.author.avatar} alt={comment.author.name} size="sm" />
+              <Avatar src={comment.author.avatar} alt={comment.author.name} size="sm" userId={comment.author._id} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm font-medium text-brand-darker">
@@ -199,7 +199,7 @@ export function CommentSection({ postId, initialComments }: CommentSectionProps)
       {/* Input */}
       {isAuthenticated ? (
         <form onSubmit={handleSubmit} className="mt-4 flex gap-3">
-          <Avatar src={user?.avatar} alt={user?.name} size="sm" />
+          <Avatar src={user?.avatar} alt={user?.name} size="sm" userId={user?._id} />
           <div className="flex-1 space-y-2">
             <textarea
               value={content}

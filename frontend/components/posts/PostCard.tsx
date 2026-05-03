@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Clock } from "lucide-react";
+import { Clock, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { formatRelativeTimeVN } from "@/lib/utils";
@@ -19,10 +19,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 export function PostCard({ post }: PostCardProps) {
-  const author =
-    typeof post.author === "string"
-      ? null
-      : post.author;
+  const author = typeof post.author === "string" ? null : post.author;
   const coverImage = post.images?.[0];
 
   return (
@@ -62,6 +59,23 @@ export function PostCard({ post }: PostCardProps) {
           <p className="mt-1.5 text-sm text-muted-foreground line-clamp-2">
             {post.description}
           </p>
+        )}
+
+        {/* Location */}
+        {(post.location?.city || post.location?.district) && (
+          <div className="mt-3 flex items-start gap-1.5 rounded-[10px] bg-brand-light/40 px-3 py-2">
+            <MapPin className="mt-0.5 size-3.5 shrink-0 text-brand-dark" />
+            <span className="text-xs leading-snug text-brand-darker">
+              {[post.location.district, post.location.city]
+                .filter(Boolean)
+                .join(", ")}
+              {post.location.detail && (
+                <span className="block text-muted-foreground line-clamp-1">
+                  {post.location.detail}
+                </span>
+              )}
+            </span>
+          </div>
         )}
 
         {/* Author row */}

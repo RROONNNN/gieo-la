@@ -32,8 +32,7 @@ const createPostSchema = z.object({
   location: z
     .object({
       city: z.string().max(60).trim().optional(),
-      district: z.string().max(60).trim().optional(),
-    })
+      district: z.string().max(60).trim().optional(),      detail: z.string().max(200).trim().optional(),    })
     .optional(),
 });
 
@@ -58,6 +57,7 @@ const updatePostSchema = z
       .object({
         city: z.string().max(60).trim().optional(),
         district: z.string().max(60).trim().optional(),
+        detail: z.string().max(200).trim().optional(),
       })
       .optional(),
   })

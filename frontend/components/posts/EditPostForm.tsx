@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Upload, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import LocationSelect from "@/components/ui/LocationSelect";
 import { updatePost } from "@/lib/api/posts";
 import { ENDPOINTS, BASE_URL } from "@/lib/api/endpoints";
 import { CATEGORY_LABEL, CONDITION_LABEL } from "@/lib/postLabels";
@@ -34,6 +35,7 @@ export function EditPostForm({ post }: EditPostFormProps) {
     description: post.description ?? "",
     city: post.location?.city ?? "",
     district: post.location?.district ?? "",
+    detail: post.location?.detail ?? "",
   });
 
   function set(field: string, value: unknown) {
@@ -111,6 +113,7 @@ export function EditPostForm({ post }: EditPostFormProps) {
           ? {
               city: form.city.trim(),
               district: form.district.trim() || undefined,
+              detail: form.detail.trim() || undefined,
             }
           : undefined,
       });
@@ -264,27 +267,22 @@ export function EditPostForm({ post }: EditPostFormProps) {
       </div>
 
       {/* Location */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-foreground">Tỉnh/Thành phố</label>
-          <input
-            type="text"
-            value={form.city}
-            onChange={(e) => set("city", e.target.value)}
-            placeholder="Hà Nội"
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-foreground">Quận/Huyện</label>
-          <input
-            type="text"
-            value={form.district}
-            onChange={(e) => set("district", e.target.value)}
-            placeholder="Cầu Giấy"
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-          />
-        </div>
+      <LocationSelect
+        city={form.city}
+        district={form.district}
+        onCityChange={(v) => set("city", v)}
+        onDistrictChange={(v) => set("district", v)}
+      />
+      <div>
+        <label className="mb-1 block text-sm font-medium text-foreground">Địa chỉ chi tiết</label>
+        <input
+          type="text"
+          value={form.detail}
+          onChange={(e) => set("detail", e.target.value)}
+          placeholder="Số nhà, phường, địa điểm cụ thể..."
+          maxLength={200}
+          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+        />
       </div>
 
       {errors.submit && (

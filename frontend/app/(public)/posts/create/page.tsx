@@ -11,6 +11,7 @@ import { CATEGORY_LABEL, CONDITION_LABEL } from "@/lib/postLabels";
 import type { PostCategory, PostCondition } from "@/types/enums";
 import { Post } from "@/types/post";
 import { getAccessToken } from "@/lib/api/client";
+import LocationSelect from "@/components/ui/LocationSelect";
 const CATEGORIES = Object.entries(CATEGORY_LABEL) as [PostCategory, string][];
 const CONDITIONS = Object.entries(CONDITION_LABEL) as [PostCondition, string][];
 
@@ -28,8 +29,9 @@ export default function CreatePostPage() {
     condition: "" as PostCondition | "",
     conditionNote: "",
     description: "",
-    city: "",
+    city: "Hà Nội",
     district: "",
+    detail: "",
   });
 
   function set(field: string, value: unknown) {
@@ -100,7 +102,7 @@ export default function CreatePostPage() {
         conditionNote: form.conditionNote.trim() || undefined,
         images,
         description: form.description.trim() || undefined,
-        location: form.city ? { city: form.city.trim(), district: form.district.trim() || undefined } : undefined,
+        location: form.city ? { city: form.city.trim(), district: form.district.trim() || undefined, detail: form.detail.trim() || undefined } : undefined,
       });
       router.push(`/posts/${res.data.post._id}`);
     } catch (err: unknown) {
@@ -255,27 +257,22 @@ export default function CreatePostPage() {
         </div>
 
         {/* Location */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-foreground">Tỉnh/Thành phố</label>
-            <input
-              type="text"
-              value={form.city}
-              onChange={(e) => set("city", e.target.value)}
-              placeholder="Hà Nội"
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-foreground">Quận/Huyện</label>
-            <input
-              type="text"
-              value={form.district}
-              onChange={(e) => set("district", e.target.value)}
-              placeholder="Cầu Giấy"
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-            />
-          </div>
+        <LocationSelect
+          city={form.city}
+          district={form.district}
+          onCityChange={(v) => set("city", v)}
+          onDistrictChange={(v) => set("district", v)}
+        />
+        <div>
+          <label className="mb-1 block text-sm font-medium text-foreground">Địa chỉ chi tiết</label>
+          <input
+            type="text"
+            value={form.detail}
+            onChange={(e) => set("detail", e.target.value)}
+            placeholder="Số nhà, phường, địa điểm cụ thể..."
+            maxLength={200}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+          />
         </div>
 
         {errors.submit && (

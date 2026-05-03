@@ -50,33 +50,29 @@ export default async function HomePage() {
     const newsData = await fetchNewsList({ limit: 3 });
     latestNews = newsData.items;
   } catch {
-    s;
     latestNews = [];
   }
 
   return (
     <div className="flex flex-col gap-24 py-20">
       {/* ─── Hero Section ─── */}
-      <section className="relative min-h-[500px] overflow-hidden rounded-[24px] bg-brand-dark px-8 py-20 sm:px-16">
+      <section className="relative min-h-[520px] overflow-hidden rounded-[24px] bg-brand-dark">
         <Image
-          src="/hero-image.jpg"
+          src="/hero-image.jpeg"
           alt="Hero background"
           fill
-          className="object-cover mix-blend-overlay opacity-50"
-          priority
+          className="object-cover"
         />
+        {/* Subtle bottom gradient so SearchBar is readable */}
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/50 to-transparent rounded-b-[24px]" />
 
-        <div className="relative z-10 flex max-w-[672px] flex-col gap-8">
-          <h1 className="font-heading text-5xl font-bold leading-tight text-white tracking-tight">
-            Lá lành đùm lá rách
-          </h1>
-          <p className="max-w-[576px] text-lg leading-relaxed text-brand-muted">
-            "Lá Lành là nền tảng chia sẻ cộng đồng, nơi bạn có thể trao đi những
-            món đồ không còn dùng đến và tìm về những thứ mình đang cần — vì
-            chúng tôi tin rằng, mỗi hành động nhỏ từ trái tim đều có thể thắp
-            sáng cuộc đời ai đó."
-          </p>
-          <SearchBar className="max-w-[512px]" />
+        {/* SearchBar pinned to bottom-center */}
+        <div className="absolute bottom-8 left-0 right-0 z-10 flex justify-center px-6">
+          <SearchBar
+            size="hero"
+            placeholder="Tìm áo, sách, đồ trẻ em..."
+            className="w-full max-w-2xl"
+          />
         </div>
       </section>
 

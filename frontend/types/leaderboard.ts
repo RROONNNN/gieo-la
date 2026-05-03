@@ -11,13 +11,13 @@ export interface LeaderboardUser {
 export interface LeaderboardEntry {
   rank: number;
   user: LeaderboardUser;
-  completedThisMonth: number;
+  completedThisWeek: number;
   badge: BadgeType;
   badgeLabel: string;
 }
 
 export interface LeaderboardResponse {
   year: number;
-  month: number;
+  week: number;
   entries: LeaderboardEntry[];
 }

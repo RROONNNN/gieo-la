@@ -108,6 +108,7 @@ const postSchema = new mongoose.Schema(
     location: {
       city: { type: String, default: 'Hà Nội' },
       district: { type: String, default: null },
+      detail: { type: String, default: null },
     },
   },
   {

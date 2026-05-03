@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import {
   Users,
   FileText,
-  Heart,
   Newspaper,
   LayoutDashboard,
   ShieldCheck,
@@ -18,7 +17,6 @@ const ADMIN_NAV = [
   { href: "/admin", label: "Tổng quan", icon: LayoutDashboard, exact: true },
   { href: "/admin/users", label: "Người dùng", icon: Users },
   { href: "/admin/posts", label: "Bài đăng", icon: FileText },
-  { href: "/admin/wishlist", label: "Wishlist", icon: Heart },
   { href: "/admin/verifications", label: "Xác thực", icon: ShieldCheck },
   { href: "/admin/news", label: "Bản tin", icon: Newspaper },
 ];
@@ -33,7 +31,7 @@ export function AdminSidebar() {
       <div className="flex h-16 items-center px-6">
         <Link
           href="/admin"
-          className="font-heading text-xl font-bold text-brand-dark"
+          className="font-heading text-2xl font-bold text-brand-dark"
         >
           Lá Lành
         </Link>

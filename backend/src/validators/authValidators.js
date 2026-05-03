@@ -13,45 +13,78 @@ const emailSchema = z
   .toLowerCase()
   .trim();
 
+const phoneSchema = z
+  .string()
+  .trim()
+  .regex(/^\+?[0-9]{9,15}$/, 'Số điện thoại không hợp lệ (chỉ chứa số, bắt đầu bằng + hoặc 0)');
+
 const nameSchema = z
   .string()
   .min(2, 'Tên phải có ít nhất 2 ký tự')
   .max(60, 'Tên không được vượt quá 60 ký tự')
   .trim();
 
+/** Refinement: yêu cầu ít nhất một trong email hoặc phone */
+const requireEmailOrPhone = (data, ctx) => {
+  if (!data.email && !data.phone) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['email'],
+      message: 'Vui lòng cung cấp email hoặc số điện thoại',
+    });
+  }
+};
+
 // ── Register: Member ──────────────────────────────────────────────────────────
-const registerMemberSchema = z.object({
-  name:     nameSchema,
-  email:    emailSchema,
-  password: passwordSchema,
-});
+const registerMemberSchema = z
+  .object({
+    name:     nameSchema,
+    email:    emailSchema.optional(),
+    phone:    phoneSchema.optional(),
+    password: passwordSchema,
+  })
+  .superRefine(requireEmailOrPhone);
 
 // ── Register: NGO ─────────────────────────────────────────────────────────────
-const registerNgoSchema = z.object({
-  name:             nameSchema,
-  email:            emailSchema,
-  password:         passwordSchema,
-  organizationName: z
-    .string()
-    .min(2, 'Tên tổ chức phải có ít nhất 2 ký tự')
-    .max(120, 'Tên tổ chức không được vượt quá 120 ký tự')
-    .trim(),
-  website: z.string().url('Website không hợp lệ').optional().or(z.literal('')),
-  description: z.string().max(500).trim().optional(),
-});
+const registerNgoSchema = z
+  .object({
+    name:             nameSchema,
+    email:            emailSchema.optional(),
+    phone:            phoneSchema.optional(),
+    password:         passwordSchema,
+    organizationName: z
+      .string()
+      .min(2, 'Tên tổ chức phải có ít nhất 2 ký tự')
+      .max(120, 'Tên tổ chức không được vượt quá 120 ký tự')
+      .trim(),
+    website:     z.string().url('Website không hợp lệ').optional().or(z.literal('')),
+    description: z.string().max(500).trim().optional(),
+  })
+  .superRefine(requireEmailOrPhone);
 
 // ── Register: Individual ──────────────────────────────────────────────────────
-const registerIndividualSchema = z.object({
-  name:     nameSchema,
-  email:    emailSchema,
-  password: passwordSchema,
-});
+const registerIndividualSchema = z
+  .object({
+    name:     nameSchema,
+    email:    emailSchema.optional(),
+    phone:    phoneSchema.optional(),
+    password: passwordSchema,
+  })
+  .superRefine(requireEmailOrPhone);
 
 // ── Login ─────────────────────────────────────────────────────────────────────
-const loginSchema = z.object({
-  email:    emailSchema,
-  password: z.string().min(1, 'Vui lòng nhập mật khẩu'),
-});
+// Chấp nhận cả `identifier` (mới) lẫn `email` (cũ/frontend) để backward-compatible
+// Normalization (identifier = identifier || email) được xử lý trong controller
+const loginSchema = z
+  .object({
+    identifier: z.string().trim().optional(),
+    email:      z.string().trim().optional(),
+    password:   z.string().min(1, 'Vui lòng nhập mật khẩu'),
+  })
+  .refine(
+    (data) => !!(data.identifier?.trim() || data.email?.trim()),
+    { message: 'Vui lòng nhập email hoặc số điện thoại', path: ['identifier'] },
+  );
 
 // ── Update profile (PATCH /me) ────────────────────────────────────────────────
 const updateProfileSchema = z

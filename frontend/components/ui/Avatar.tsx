@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import Link from "next/link";
 
 type AvatarSize = "sm" | "md" | "lg" | "xl";
 
@@ -9,6 +10,7 @@ interface AvatarProps {
   size?: AvatarSize;
   showOnline?: boolean;
   className?: string;
+  userId?: string;
 }
 
 const sizeMap: Record<AvatarSize, number> = {
@@ -45,10 +47,11 @@ export function Avatar({
   size = "md",
   showOnline = false,
   className,
+  userId,
 }: AvatarProps) {
   const px = sizeMap[size];
 
-  return (
+  const inner = (
     <div className={cn("relative inline-flex shrink-0", className)}>
       {src ? (
         <Image
@@ -56,10 +59,7 @@ export function Avatar({
           alt={alt}
           width={px}
           height={px}
-          className={cn(
-            "rounded-full object-cover",
-            sizeClasses[size],
-          )}
+          className={cn("rounded-full object-cover", sizeClasses[size])}
         />
       ) : (
         <div
@@ -77,4 +77,14 @@ export function Avatar({
       )}
     </div>
   );
+
+  if (userId) {
+    return (
+      <Link href={`/profile/${userId}`} className="shrink-0">
+        {inner}
+      </Link>
+    );
+  }
+
+  return inner;
 }

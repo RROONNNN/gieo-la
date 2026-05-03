@@ -8,6 +8,7 @@ import type { UserRef } from "./user";
 export interface PostLocation {
   city: string | null;
   district: string | null;
+  detail: string | null;
 }
 
 export interface Post {
@@ -51,6 +52,7 @@ export interface CreatePostPayload {
   location?: {
     city?: string;
     district?: string;
+    detail?: string;
   };
 }
 
@@ -65,5 +67,6 @@ export interface UpdatePostPayload {
   location?: {
     city?: string;
     district?: string;
+    detail?: string;
   };
 }

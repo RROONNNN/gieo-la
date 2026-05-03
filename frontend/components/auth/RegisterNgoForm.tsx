@@ -8,38 +8,56 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ApiError } from "@/lib/api/client";
 
-const schema = z
-  .object({
-    name: z.string().min(2, "Tên phải có ít nhất 2 ký tự").max(60),
-    email: z.string().email("Email không hợp lệ"),
-    password: z.string().min(8, "Mật khẩu phải có ít nhất 8 ký tự").max(72),
-    confirmPassword: z.string(),
-    organizationName: z
-      .string()
-      .min(2, "Tên tổ chức phải có ít nhất 2 ký tự")
-      .max(120),
-    website: z
-      .string()
-      .url("Website không hợp lệ")
-      .optional()
-      .or(z.literal("")),
-    description: z.string().max(500).optional(),
-  })
-  .refine((d) => d.password === d.confirmPassword, {
-    message: "Mật khẩu xác nhận không khớp",
-    path: ["confirmPassword"],
-  });
+type RegMode = "email" | "phone";
 
-type Fields = z.infer<typeof schema>;
+function buildSchema(mode: RegMode) {
+  return z
+    .object({
+      name: z.string().min(2, "Tên phải có ít nhất 2 ký tự").max(60),
+      identifier:
+        mode === "email"
+          ? z.string().email("Email không hợp lệ")
+          : z
+              .string()
+              .regex(/^\+?[0-9]{9,15}$/, "Số điện thoại không hợp lệ"),
+      password: z.string().min(8, "Mật khẩu phải có ít nhất 8 ký tự").max(72),
+      confirmPassword: z.string(),
+      organizationName: z
+        .string()
+        .min(2, "Tên tổ chức phải có ít nhất 2 ký tự")
+        .max(120),
+      website: z
+        .string()
+        .url("Website không hợp lệ")
+        .optional()
+        .or(z.literal("")),
+      description: z.string().max(500).optional(),
+    })
+    .refine((d) => d.password === d.confirmPassword, {
+      message: "Mật khẩu xác nhận không khớp",
+      path: ["confirmPassword"],
+    });
+}
+
+type Fields = {
+  name: string;
+  identifier: string;
+  password: string;
+  confirmPassword: string;
+  organizationName: string;
+  website: string;
+  description: string;
+};
 type FieldErrors = Partial<Record<keyof Fields, string>>;
 
 export function RegisterNgoForm() {
   const { registerNgo } = useAuth();
   const router = useRouter();
 
+  const [mode, setMode] = useState<RegMode>("email");
   const [values, setValues] = useState<Fields>({
     name: "",
-    email: "",
+    identifier: "",
     password: "",
     confirmPassword: "",
     organizationName: "",
@@ -49,6 +67,14 @@ export function RegisterNgoForm() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  function switchMode(next: RegMode) {
+    if (next === mode) return;
+    setMode(next);
+    setValues((prev) => ({ ...prev, identifier: "" }));
+    setErrors({});
+    setServerError(null);
+  }
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -61,7 +87,7 @@ export function RegisterNgoForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const result = schema.safeParse(values);
+    const result = buildSchema(mode).safeParse(values);
     if (!result.success) {
       const fieldErrors: FieldErrors = {};
       for (const issue of result.error.issues) {
@@ -76,7 +102,9 @@ export function RegisterNgoForm() {
     try {
       await registerNgo({
         name: result.data.name,
-        email: result.data.email,
+        ...(mode === "email"
+          ? { email: result.data.identifier }
+          : { phone: result.data.identifier }),
         password: result.data.password,
         organizationName: result.data.organizationName,
         website: result.data.website || undefined,
@@ -99,6 +127,7 @@ export function RegisterNgoForm() {
           {serverError}
         </p>
       )}
+
       <Input
         id="name"
         name="name"
@@ -109,17 +138,61 @@ export function RegisterNgoForm() {
         onChange={handleChange}
         error={errors.name}
       />
-      <Input
-        id="email"
-        name="email"
-        type="email"
-        label="Email"
-        placeholder="contact@ngo.org"
-        autoComplete="email"
-        value={values.email}
-        onChange={handleChange}
-        error={errors.email}
-      />
+
+      {/* Toggle email / phone */}
+      <div className="flex overflow-hidden rounded-lg border border-border text-sm">
+        <button
+          type="button"
+          onClick={() => switchMode("email")}
+          className={`flex-1 py-2 font-medium transition-colors ${
+            mode === "email"
+              ? "bg-primary text-primary-foreground"
+              : "bg-background text-muted-foreground hover:bg-muted"
+          }`}
+        >
+          Email
+        </button>
+        <button
+          type="button"
+          onClick={() => switchMode("phone")}
+          className={`flex-1 py-2 font-medium transition-colors ${
+            mode === "phone"
+              ? "bg-primary text-primary-foreground"
+              : "bg-background text-muted-foreground hover:bg-muted"
+          }`}
+        >
+          Số điện thoại
+        </button>
+      </div>
+
+      {mode === "email" ? (
+        <Input
+          key="email"
+          id="identifier"
+          name="identifier"
+          type="email"
+          label="Email"
+          placeholder="contact@ngo.org"
+          autoComplete="email"
+          value={values.identifier}
+          onChange={handleChange}
+          error={errors.identifier}
+        />
+      ) : (
+        <Input
+          key="phone"
+          id="identifier"
+          name="identifier"
+          type="tel"
+          label="Số điện thoại"
+          placeholder="0912345678"
+          autoComplete="tel"
+          value={values.identifier}
+          onChange={handleChange}
+          error={errors.identifier}
+        />
+      )}
+
       <Input
         id="organizationName"
         name="organizationName"
@@ -151,7 +224,7 @@ export function RegisterNgoForm() {
           name="description"
           rows={3}
           placeholder="Giới thiệu ngắn về hoạt động của tổ chức..."
-          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-none"
+          className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
           value={values.description}
           onChange={handleChange}
         />
@@ -159,6 +232,7 @@ export function RegisterNgoForm() {
           <p className="text-xs text-red-500">{errors.description}</p>
         )}
       </div>
+
       <Input
         id="password"
         name="password"
@@ -181,6 +255,7 @@ export function RegisterNgoForm() {
         onChange={handleChange}
         error={errors.confirmPassword}
       />
+
       <Button type="submit" className="w-full" loading={loading}>
         Gửi đăng ký
       </Button>

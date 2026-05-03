@@ -13,7 +13,11 @@ import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { useAuth } from "@/hooks/useAuth";
-import { applyForPost, selectApplicant, confirmReceipt } from "@/lib/api/applications";
+import {
+  applyForPost,
+  selectApplicant,
+  confirmReceipt,
+} from "@/lib/api/applications";
 import { useRouter } from "next/navigation";
 import { formatRelativeTimeVN } from "@/lib/utils";
 import type { Application } from "@/types/application";
@@ -200,7 +204,8 @@ export function ApplicationPanel({
                   Bạn đã nhận được đồ chưa?
                 </p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  Xác nhận để người tặng và Admin biết rằng bạn đã nhận được đồ thành công.
+                  Xác nhận để người tặng và Admin biết rằng bạn đã nhận được đồ
+                  thành công.
                 </p>
               </div>
               <Button
@@ -270,6 +275,7 @@ export function ApplicationPanel({
                       src={applicant?.avatar}
                       alt={applicant?.name}
                       size="sm"
+                      userId={applicantId}
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5 flex-wrap">
@@ -314,7 +320,9 @@ export function ApplicationPanel({
                       >
                         <MessageSquare className="size-3.5 shrink-0" />
                         <span className="flex-1 font-medium">
-                          {expandedMessages.has(app._id) ? "Ẩn lý do" : "Xem lý do"}
+                          {expandedMessages.has(app._id)
+                            ? "Ẩn lý do"
+                            : "Xem lý do"}
                         </span>
                         <ChevronDown
                           className={[

@@ -87,7 +87,18 @@ export function MessageThread({
 
   function handleSendText(text: string) {
     if (!socket) return;
-    socket.emit("send_message", { conversationId, type: "text", content: text });
+    socket.emit(
+      "send_message",
+      { conversationId, type: "text", content: text },
+      (ack: { success: boolean; message?: ChatMessage }) => {
+        if (ack?.success && ack.message) {
+          setMessages((prev) => {
+            if (prev.some((m) => m._id === ack.message!._id)) return prev;
+            return [...prev, ack.message!];
+          });
+        }
+      },
+    );
   }
 
   async function handleSendFile(file: File) {
@@ -97,14 +108,25 @@ export function MessageThread({
       : uploaded.fileMimeType.startsWith("video/")
         ? "video"
         : "file";
-    socket?.emit("send_message", {
-      conversationId,
-      type,
-      fileUrl: uploaded.fileUrl,
-      fileName: uploaded.fileName,
-      fileSize: uploaded.fileSize,
-      fileMimeType: uploaded.fileMimeType,
-    });
+    socket?.emit(
+      "send_message",
+      {
+        conversationId,
+        type,
+        fileUrl: uploaded.fileUrl,
+        fileName: uploaded.fileName,
+        fileSize: uploaded.fileSize,
+        fileMimeType: uploaded.fileMimeType,
+      },
+      (ack: { success: boolean; message?: ChatMessage }) => {
+        if (ack?.success && ack.message) {
+          setMessages((prev) => {
+            if (prev.some((m) => m._id === ack.message!._id)) return prev;
+            return [...prev, ack.message!];
+          });
+        }
+      },
+    );
   }
 
   return (

@@ -39,7 +39,8 @@ export default async function PostDetailPage({ params }: PageProps) {
   ]);
 
   const author = typeof post.author === "string" ? null : post.author;
-  const authorId = author?._id || (typeof post.author === "string" ? post.author : "");
+  const authorId =
+    author?._id || (typeof post.author === "string" ? post.author : "");
   const isAuthor = viewer !== null && viewer._id === authorId;
 
   const selectedApplicantId =
@@ -49,7 +50,9 @@ export default async function PostDetailPage({ params }: PageProps) {
         ? post.selectedApplicant
         : post.selectedApplicant._id;
   const isSelectedApplicant =
-    viewer !== null && selectedApplicantId !== null && viewer._id === selectedApplicantId;
+    viewer !== null &&
+    selectedApplicantId !== null &&
+    viewer._id === selectedApplicantId;
 
   return (
     <div className="py-10">
@@ -66,6 +69,20 @@ export default async function PostDetailPage({ params }: PageProps) {
           <>
             <ChevronRight className="size-3" />
             <span className="text-brand-darker">{post.location.city}</span>
+          </>
+        )}
+        {post.location?.district && (
+          <>
+            <ChevronRight className="size-3" />
+            <span className="text-brand-darker">{post.location.district}</span>
+          </>
+        )}
+        {post.location?.detail && (
+          <>
+            <ChevronRight className="size-3" />
+            <span className="truncate max-w-[200px] text-brand-darker">
+              {post.location.detail}
+            </span>
           </>
         )}
       </nav>
@@ -90,7 +107,9 @@ export default async function PostDetailPage({ params }: PageProps) {
           <PostLikeButton
             postId={post._id}
             initialLikes={post.likesCount ?? 0}
-            initialLiked={viewer !== null && (post.likes ?? []).includes(viewer._id)}
+            initialLiked={
+              viewer !== null && (post.likes ?? []).includes(viewer._id)
+            }
             isAuthenticated={viewer !== null}
           />
         </div>
@@ -100,7 +119,7 @@ export default async function PostDetailPage({ params }: PageProps) {
       {author && (
         <Link
           href={`/profile/${author._id}`}
-          className="mb-8 inline-flex items-center gap-3 group"
+          className="mb-4 inline-flex items-center gap-3 group"
         >
           <Avatar src={author.avatar} alt={author.name} size="md" showOnline />
           <div>
@@ -112,13 +131,37 @@ export default async function PostDetailPage({ params }: PageProps) {
                 </span>
               )}
             </p>
-            <p className="flex items-center gap-1 text-xs text-muted-foreground">
-              <MapPin className="size-3" />
-              {post.location?.city || "Hà Nội"} &middot;{" "}
+            <p className="text-xs text-muted-foreground">
               Đăng {formatRelativeTimeVN(post.createdAt)}
             </p>
           </div>
         </Link>
+      )}
+
+      {/* Location block */}
+      {(post.location?.city ||
+        post.location?.district ||
+        post.location?.detail) && (
+        <div className="mb-8 flex items-start gap-3 rounded-[15px] border border-[var(--border-green)] bg-brand-light/30 px-5 py-4">
+          <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-dark/10 text-brand-dark">
+            <MapPin className="size-4" />
+          </div>
+          <div>
+            <p className="mb-0.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Địa chỉ nhận đồ
+            </p>
+            <p className="font-medium text-brand-darker">
+              {[post.location.district, post.location.city]
+                .filter(Boolean)
+                .join(", ")}
+            </p>
+            {post.location.detail && (
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                {post.location.detail}
+              </p>
+            )}
+          </div>
+        </div>
       )}
 
       {/* 2-column layout */}

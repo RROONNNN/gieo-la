@@ -39,7 +39,7 @@ interface AuthContextValue {
   user: SafeUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (payload: LoginPayload) => Promise<void>;
+  login: (payload: LoginPayload) => Promise<void>; // identifier = email hoặc phone
   logout: () => Promise<void>;
   registerMember: (payload: RegisterMemberPayload) => Promise<void>;
   registerNgo: (payload: RegisterNgoPayload) => Promise<void>;
