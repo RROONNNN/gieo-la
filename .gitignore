@@ -1,2 +1,6 @@
 node_modules/
 specs
+.env
+.env.*
+backend/.env
+frontend/.env*
