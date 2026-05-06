@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { User, LogOut, ChevronDown, MessageSquare } from "lucide-react";
+import { User, LogOut, ChevronDown, MessageSquare, PlusCircle } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -87,6 +87,15 @@ export function Navbar() {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
+          {/* Đăng bài button */}
+          <Link
+            href={isAuthenticated ? "/posts/create" : "/login"}
+            className="flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-brand-dark hover:bg-white/90 transition-colors"
+          >
+            <PlusCircle className="size-4" />
+            Đăng bài
+          </Link>
+
           {/* Chat icon with unread badge */}
           {isAuthenticated && (
             <Link
