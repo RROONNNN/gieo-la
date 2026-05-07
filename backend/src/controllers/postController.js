@@ -286,7 +286,7 @@ const adminDeletePost = async (req, res) => {
     return res.status(404).json({ success: false, message: 'Không tìm thấy bài đăng' });
   }
 
-  const reason = req.body.reason || null;
+  const reason = req.body?.reason || null;
   await logAudit(req.user._id, 'Post', post._id, 'post.admin_delete', { reason }, req);
   await post.deleteOne();
 
