@@ -1,12 +1,18 @@
 "use client";
 
 import { useState, useRef } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, ImagePlus } from "lucide-react";
 import { adminCreateNews, adminUpdateNews } from "@/lib/api/news";
-import { uploadImage } from "@/lib/api/upload";
+import { uploadImage, uploadNewsContentImage } from "@/lib/api/upload";
 import type { NewsPost, CreateNewsPayload, NewsCategory, NewsStatus } from "@/types/news";
+import type { ExecuteState, TextAreaTextApi } from "@uiw/react-md-editor";
+import "@uiw/react-md-editor/markdown-editor.css";
+
+// Dynamic import avoids SSR issues with CodeMirror inside MDEditor
+const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 const CATEGORIES: { value: NewsCategory; label: string }[] = [
   { value: "announcement", label: "Thông báo" },
@@ -37,10 +43,44 @@ export function NewsForm({ post }: NewsFormProps) {
   const [isPinned, setIsPinned] = useState(post?.isPinned ?? false);
   const [thumbnailUrl, setThumbnailUrl] = useState(post?.thumbnail ?? "");
   const [thumbnailUploading, setThumbnailUploading] = useState(false);
+  const [contentImageUploading, setContentImageUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const contentImageInputRef = useRef<HTMLInputElement>(null);
+  // Holds the MDEditor API reference captured when the insert-image command fires
+  const pendingMdApiRef = useRef<TextAreaTextApi | null>(null);
+
+  // Custom MDEditor command — opens file picker and inserts uploaded image as Markdown
+  const insertImageCommand = {
+    name: "uploadImage",
+    keyCommand: "uploadImage",
+    buttonProps: { "aria-label": "Chèn hình ảnh vào bài viết", title: "Chèn hình ảnh" },
+    icon: <ImagePlus className="size-3.5" />,
+    execute: (_state: ExecuteState, api: TextAreaTextApi) => {
+      pendingMdApiRef.current = api;
+      contentImageInputRef.current?.click();
+    },
+  };
+
+  const handleContentImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = ""; // reset so the same file can be picked again
+    setContentImageUploading(true);
+    setError(null);
+    try {
+      const url = await uploadNewsContentImage(file);
+      const altText = file.name.replace(/\.[^/.]+$/, "");
+      pendingMdApiRef.current?.replaceSelection(`![${altText}](${url})`);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Tải ảnh thất bại");
+    } finally {
+      setContentImageUploading(false);
+      pendingMdApiRef.current = null;
+    }
+  };
 
   const handleThumbnailChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -192,18 +232,30 @@ export function NewsForm({ post }: NewsFormProps) {
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-medium text-brand-darker">
           Nội dung <span className="text-red-500">*</span>
-          <span className="ml-1 text-xs font-normal text-muted-foreground">
-            (hỗ trợ Markdown)
-          </span>
+          {contentImageUploading && (
+            <span className="ml-2 inline-flex items-center gap-1 text-xs font-normal text-muted-foreground">
+              <Loader2 className="size-3 animate-spin" /> Đang tải ảnh lên...
+            </span>
+          )}
         </label>
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Nhập nội dung bài viết... (hỗ trợ Markdown)"
-          required
-          rows={16}
-          className={`${inputClass} resize-y font-mono text-xs leading-relaxed`}
+        {/* Hidden file input for inline content images */}
+        <input
+          ref={contentImageInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={handleContentImageChange}
+          className="hidden"
         />
+        <div data-color-mode="light" className="rounded-[10px] overflow-hidden border border-[var(--border-green)]">
+          <MDEditor
+            value={content}
+            onChange={(val) => setContent(val ?? "")}
+            height={420}
+            extraCommands={[insertImageCommand]}
+            preview="edit"
+            textareaProps={{ required: true, minLength: 1, placeholder: "Nhập nội dung bài viết... (hỗ trợ Markdown và hình ảnh)" }}
+          />
+        </div>
       </div>
 
       {/* isPinned */}
@@ -224,7 +276,7 @@ export function NewsForm({ post }: NewsFormProps) {
       <div className="flex items-center gap-3">
         <button
           type="submit"
-          disabled={submitting || thumbnailUploading}
+          disabled={submitting || thumbnailUploading || contentImageUploading}
           className="inline-flex items-center gap-2 rounded-full bg-brand-dark px-6 py-2.5 text-sm font-medium text-white hover:bg-brand-darker transition-colors disabled:opacity-50"
         >
           {submitting && <Loader2 className="size-4 animate-spin" />}
@@ -233,7 +285,8 @@ export function NewsForm({ post }: NewsFormProps) {
         <button
           type="button"
           onClick={() => router.push("/admin/news")}
-          className="rounded-full border border-[var(--border-green)] px-6 py-2.5 text-sm font-medium text-brand-darker hover:bg-brand-light/30 transition-colors"
+          disabled={contentImageUploading}
+          className="rounded-full border border-[var(--border-green)] px-6 py-2.5 text-sm font-medium text-brand-darker hover:bg-brand-light/30 transition-colors disabled:opacity-50"
         >
           Hủy
         </button>

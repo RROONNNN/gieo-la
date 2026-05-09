@@ -20,6 +20,7 @@ export const ENDPOINTS = {
   UPLOAD: {
     IMAGE: `${API_BASE}/upload/image`,
     FILE: `${API_BASE}/upload/file`,
+    NEWS_CONTENT_IMAGE: `${API_BASE}/upload/news-content-image`,
   },
   POSTS: {
     LIST: `${API_BASE}/posts`,

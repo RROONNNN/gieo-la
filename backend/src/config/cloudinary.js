@@ -52,6 +52,21 @@ const uploadDocument = multer({
   },
 });
 
+// Storage for news content inline images
+const newsContentStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'gieo-la/news',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [{ quality: 'auto', fetch_format: 'auto' }],
+  },
+});
+
+const uploadNewsContent = multer({
+  storage: newsContentStorage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+});
+
 // module.exports moved to end of file — see below
 
 // ── Chat media storage (images, videos, files) ─────────────────────────────
@@ -119,4 +134,4 @@ const uploadChatMedia = multer({
   },
 });
 
-module.exports = { cloudinary, upload, uploadDocument, uploadChatMedia };
+module.exports = { cloudinary, upload, uploadDocument, uploadNewsContent, uploadChatMedia };

@@ -1,8 +1,8 @@
 'use strict';
 
 const { Router } = require('express');
-const { protect } = require('../middlewares/auth');
-const { upload, uploadImage, uploadDocument, uploadFile } = require('../controllers/uploadController');
+const { protect, restrictTo } = require('../middlewares/auth');
+const { upload, uploadImage, uploadDocument, uploadFile, uploadNewsContent, uploadNewsContentImage } = require('../controllers/uploadController');
 
 const router = Router();
 
@@ -19,5 +19,11 @@ router.post('/image', upload.single('image'), uploadImage);
  * Uploads a single document file (image/PDF/DOC/DOCX, ≤20 MB) and returns its URL.
  */
 router.post('/file', uploadDocument.single('file'), uploadFile);
+
+/**
+ * POST /api/v1/upload/news-content-image
+ * Admin-only: uploads an inline image for embedding in news post content.
+ */
+router.post('/news-content-image', restrictTo('admin'), uploadNewsContent.single('image'), uploadNewsContentImage);
 
 module.exports = router;

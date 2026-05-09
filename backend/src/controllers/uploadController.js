@@ -1,6 +1,6 @@
 'use strict';
 
-const { upload, uploadDocument } = require('../config/cloudinary');
+const { upload, uploadDocument, uploadNewsContent } = require('../config/cloudinary');
 
 /**
  * POST /api/v1/upload/image
@@ -47,4 +47,26 @@ const uploadFile = (req, res) => {
   });
 };
 
-module.exports = { upload, uploadImage, uploadDocument, uploadFile };
+/**
+ * POST /api/v1/upload/news-content-image
+ * Admin-only: upload an inline image to embed inside a news post's content.
+ * Returns the Cloudinary CDN URL.
+ */
+const uploadNewsContentImage = (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({
+      success: false,
+      message: 'Không tìm thấy file ảnh. Vui lòng chọn ảnh để tải lên.',
+    });
+  }
+
+  const url = req.file.path;
+
+  return res.status(201).json({
+    success: true,
+    message: 'Tải ảnh lên thành công',
+    data: { url },
+  });
+};
+
+module.exports = { upload, uploadImage, uploadDocument, uploadFile, uploadNewsContent, uploadNewsContentImage };
