@@ -188,12 +188,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         <div className="mb-10">
           <SectionHeading>Thông tin tổ chức</SectionHeading>
           <div className="mt-6 rounded-[15px] border border-[var(--border-green)] bg-white p-6 space-y-3">
-            <p className="text-sm">
-              <span className="font-medium text-brand-darker">
-                Tên tổ chức:
-              </span>{" "}
-              {profileUser.ngoProfile.organizationName || "—"}
-            </p>
             {profileUser.ngoProfile.website && (
               <p className="text-sm">
                 <span className="font-medium text-brand-darker">Website:</span>{" "}

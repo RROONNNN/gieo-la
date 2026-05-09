@@ -41,7 +41,7 @@ const listWishlist = async (req, res) => {
 
   const [items, total] = await Promise.all([
     Wishlist.find(filter)
-      .populate('author', 'name avatar role verificationStatus ngoProfile.organizationName')
+      .populate('author', 'name avatar role verificationStatus')
       .sort({ isPinned: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit),
@@ -61,7 +61,7 @@ const listWishlist = async (req, res) => {
 const getWishlist = async (req, res) => {
   const item = await Wishlist.findById(req.params.id).populate(
     'author',
-    'name avatar role verificationStatus ngoProfile.organizationName'
+    'name avatar role verificationStatus'
   );
   if (!item) {
     return res.status(404).json({ success: false, message: 'Không tìm thấy wishlist' });

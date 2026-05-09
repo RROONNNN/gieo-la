@@ -15,7 +15,6 @@ export interface UserLocation {
 }
 
 export interface NgoProfile {
-  organizationName: string | null;
   description: string | null;
   website: string | null;
 }

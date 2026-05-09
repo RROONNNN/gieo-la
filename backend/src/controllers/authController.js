@@ -136,7 +136,7 @@ const registerNgo = async (req, res) => {
     });
   }
 
-  const { name, email, phone, password, organizationName, website, description } = parsed.data;
+  const { name, email, phone, password, website, description } = parsed.data;
 
   if (!await checkIdentifierUniqueness(res, { email, phone })) return;
 
@@ -148,7 +148,7 @@ const registerNgo = async (req, res) => {
     role:               USER_ROLES.NGO,
     accountStatus:      ACCOUNT_STATUSES.ACTIVE,
     verificationStatus: VERIFICATION_STATUSES.UNVERIFIED,
-    ngoProfile:         { organizationName, website: website || null, description: description || null },
+    ngoProfile:         { website: website || null, description: description || null },
   });
 
   const { accessToken, safeUserData } = await issueTokens(res, user);
@@ -320,7 +320,6 @@ const updateMe = async (req, res) => {
   if (contact?.phone !== undefined)               updates['contact.phone']               = contact.phone;
   if (location?.city !== undefined)               updates['location.city']               = location.city;
   if (location?.district !== undefined)           updates['location.district']           = location.district;
-  if (ngoProfile?.organizationName !== undefined) updates['ngoProfile.organizationName'] = ngoProfile.organizationName;
   if (ngoProfile?.website !== undefined)          updates['ngoProfile.website']          = ngoProfile.website;
   if (ngoProfile?.description !== undefined)      updates['ngoProfile.description']      = ngoProfile.description;
 

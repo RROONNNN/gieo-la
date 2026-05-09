@@ -12,7 +12,7 @@ export interface AdminUserSummary {
   role: UserRole;
   verificationStatus: VerificationStatus;
   accountStatus: string;
-  ngoProfile: { organizationName: string | null } | null;
+  ngoProfile: { website: string | null; description: string | null } | null;
 }
 
 interface BadgeActionResponse {

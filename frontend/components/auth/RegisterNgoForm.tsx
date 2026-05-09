@@ -13,7 +13,7 @@ type RegMode = "email" | "phone";
 function buildSchema(mode: RegMode) {
   return z
     .object({
-      name: z.string().min(2, "Tên phải có ít nhất 2 ký tự").max(60),
+      name: z.string().min(2, "Tên phải có ít nhất 2 ký tự").max(120),
       identifier:
         mode === "email"
           ? z.string().email("Email không hợp lệ")
@@ -22,10 +22,6 @@ function buildSchema(mode: RegMode) {
               .regex(/^\+?[0-9]{9,15}$/, "Số điện thoại không hợp lệ"),
       password: z.string().min(8, "Mật khẩu phải có ít nhất 8 ký tự").max(72),
       confirmPassword: z.string(),
-      organizationName: z
-        .string()
-        .min(2, "Tên tổ chức phải có ít nhất 2 ký tự")
-        .max(120),
       website: z
         .string()
         .url("Website không hợp lệ")
@@ -44,7 +40,6 @@ type Fields = {
   identifier: string;
   password: string;
   confirmPassword: string;
-  organizationName: string;
   website: string;
   description: string;
 };
@@ -60,7 +55,6 @@ export function RegisterNgoForm() {
     identifier: "",
     password: "",
     confirmPassword: "",
-    organizationName: "",
     website: "",
     description: "",
   });
@@ -106,7 +100,6 @@ export function RegisterNgoForm() {
           ? { email: result.data.identifier }
           : { phone: result.data.identifier }),
         password: result.data.password,
-        organizationName: result.data.organizationName,
         website: result.data.website || undefined,
         description: result.data.description || undefined,
       });
@@ -131,8 +124,8 @@ export function RegisterNgoForm() {
       <Input
         id="name"
         name="name"
-        label="Tên người đại diện"
-        placeholder="Nguyễn Văn A"
+        label="Tên tổ chức"
+        placeholder="Ví dụ: Quỹ Hy Vọng"
         autoComplete="name"
         value={values.name}
         onChange={handleChange}
@@ -193,15 +186,6 @@ export function RegisterNgoForm() {
         />
       )}
 
-      <Input
-        id="organizationName"
-        name="organizationName"
-        label="Tên tổ chức"
-        placeholder="Ví dụ: Quỹ Hy Vọng"
-        value={values.organizationName}
-        onChange={handleChange}
-        error={errors.organizationName}
-      />
       <Input
         id="website"
         name="website"

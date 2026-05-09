@@ -68,7 +68,6 @@ const userSchema = new mongoose.Schema(
 
     // NGO-specific profile
     ngoProfile: {
-      organizationName: { type: String, default: null },
       website: { type: String, default: null },
       description: { type: String, default: null },
     },

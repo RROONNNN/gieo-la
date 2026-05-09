@@ -26,7 +26,6 @@ export interface RegisterNgoPayload {
   email?: string;
   phone?: string;
   password: string;
-  organizationName: string;
   website?: string;
   description?: string;
 }

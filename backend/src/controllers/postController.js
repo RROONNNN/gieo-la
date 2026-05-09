@@ -70,7 +70,7 @@ const listPosts = async (req, res) => {
 
   const [posts, total] = await Promise.all([
     Post.find(filter)
-      .populate('author', 'name avatar role verificationStatus badge ngoProfile.organizationName')
+      .populate('author', 'name avatar role verificationStatus badge')
       .sort({ isPinned: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit),
@@ -89,7 +89,7 @@ const listPosts = async (req, res) => {
  */
 const getPost = async (req, res) => {
   const post = await Post.findById(req.params.id)
-    .populate('author', 'name avatar role verificationStatus badge ngoProfile.organizationName location')
+    .populate('author', 'name avatar role verificationStatus badge location')
     .populate('selectedApplicant', 'name avatar role');
 
   if (!post) {

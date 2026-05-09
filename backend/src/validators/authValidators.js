@@ -48,15 +48,10 @@ const registerMemberSchema = z
 // ── Register: NGO ─────────────────────────────────────────────────────────────
 const registerNgoSchema = z
   .object({
-    name:             nameSchema,
-    email:            emailSchema.optional(),
-    phone:            phoneSchema.optional(),
-    password:         passwordSchema,
-    organizationName: z
-      .string()
-      .min(2, 'Tên tổ chức phải có ít nhất 2 ký tự')
-      .max(120, 'Tên tổ chức không được vượt quá 120 ký tự')
-      .trim(),
+    name:        nameSchema,
+    email:       emailSchema.optional(),
+    phone:       phoneSchema.optional(),
+    password:    passwordSchema,
     website:     z.string().url('Website không hợp lệ').optional().or(z.literal('')),
     description: z.string().max(500).trim().optional(),
   })
@@ -108,9 +103,8 @@ const updateProfileSchema = z
       .optional(),
     ngoProfile: z
       .object({
-        organizationName: z.string().max(120).trim().nullable().optional(),
-        website:          z.string().url().nullable().optional().or(z.literal('')),
-        description:      z.string().max(500).trim().nullable().optional(),
+        website:     z.string().url().nullable().optional().or(z.literal('')),
+        description: z.string().max(500).trim().nullable().optional(),
       })
       .optional(),
   })

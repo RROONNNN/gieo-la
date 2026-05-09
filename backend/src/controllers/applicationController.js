@@ -155,7 +155,7 @@ const listApplications = async (req, res) => {
   }
 
   const applications = await Application.find({ post: postId })
-    .populate('applicant', 'name avatar role verificationStatus badge ngoProfile.organizationName')
+    .populate('applicant', 'name avatar role verificationStatus badge')
     .sort({ createdAt: 1 });
 
   // Sort by role priority: NGO → Individual → Member/Admin

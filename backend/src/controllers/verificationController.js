@@ -384,7 +384,7 @@ const updateIndividualStatus = async (req, res) => {
  */
 const getUser = async (req, res) => {
   const user = await User.findById(req.params.id)
-    .select('name email role verificationStatus accountStatus ngoProfile.organizationName');
+    .select('name email role verificationStatus accountStatus');
   if (!user) {
     return res.status(404).json({ success: false, message: 'Không tìm thấy người dùng' });
   }
@@ -438,7 +438,7 @@ const listUsers = async (req, res) => {
 
   const [users, total] = await Promise.all([
     User.find(filter)
-      .select('name email role verificationStatus accountStatus ngoProfile.organizationName')
+      .select('name email role verificationStatus accountStatus')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit),
